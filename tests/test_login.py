@@ -280,3 +280,29 @@ class TestLogin:
 
         # [ASSERT] 2. Bezpečnostní kontrola: pole pro heslo musí mít type="password"
         expect(login_page.password_input).to_have_attribute("type", "password")
+
+    def test_login_form_ui_elements_state(self, page: Page):
+        """
+        TC08: Kontrola výchozího stavu UI prvků přihlašovacího formuláře (Placeholdery a aktivní tlačítko).
+        
+        Kroky testu:
+        1. Otevření přihlašovací stránky.
+        2. Ověření nápovědy (placeholder) ve vstupním poli pro e-mail ("Email").
+        3. Ověření, že pole pro e-mail i heslo jsou aktivní a připravená k zápisu (enabled).
+        4. Ověření, že přihlašovací tlačítko má text "Přihlásit" a je klikatelné (enabled).
+        """
+        # [ARRANGE] Otevření stránky
+        login_page = LoginPage(page)
+        login_page.open()
+
+        # [ASSERT] 1. Kontrola placeholderu u e-mailového pole
+        expect(login_page.email_input).to_have_attribute("placeholder", "Email")
+
+        # [ASSERT] 2. Kontrola, že jsou formulářová pole aktivní
+        expect(login_page.email_input).to_be_enabled()
+        expect(login_page.password_input).to_be_enabled()
+
+        # [ASSERT] 3. Kontrola textu a klikatelnosti přihlašovacího tlačítka
+        expect(login_page.login_button).to_have_text("Přihlásit")
+        expect(login_page.login_button).to_be_enabled()
+
