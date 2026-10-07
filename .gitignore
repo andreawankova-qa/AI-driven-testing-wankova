@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Pytest & Testing caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Playwright & Reports
+test-results/
+playwright-report/
+report.html
+
+# macOS
+.DS_Store
+
+# IDE & Editors
+.vscode/
+.idea/
