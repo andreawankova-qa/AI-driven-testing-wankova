@@ -1,23 +1,24 @@
 from playwright.sync_api import Page, Locator
 from pages.base_page import BasePage
+from config.settings import settings
 
 
 class LoginPage(BasePage):
     """Page Object reprezentující přihlašovací stránku Demo Login (kitner.cz)."""
 
-    URL = "http://testovani.kitner.cz/login"
+    URL = f"{settings.BASE_URL}/login"
 
     def __init__(self, page: Page):
         super().__init__(page)
-        # Lokátory elementů na přihlašovací stránce
-        self.email_input: Locator = page.locator('[data-testid="email_input"]')
-        self.password_input: Locator = page.locator('[data-testid="password_input"]')
-        self.login_button: Locator = page.locator('[data-testid="login_button"]')
-        self.email_error: Locator = page.locator('[data-testid="email_input_errors"]')
-        self.password_error: Locator = page.locator('[data-testid="password_input_errors"]')
-        self.heading: Locator = page.locator('[data-testid="login_text"]')
-        self.register_link: Locator = page.locator('[data-testid="register_link"]')
-        self.forgot_password_link: Locator = page.locator('[data-testid="forgot_password_link"]')
+        # Nativní Playwright lokátory přes get_by_test_id
+        self.email_input: Locator = page.get_by_test_id("email_input")
+        self.password_input: Locator = page.get_by_test_id("password_input")
+        self.login_button: Locator = page.get_by_test_id("login_button")
+        self.email_error: Locator = page.get_by_test_id("email_input_errors")
+        self.password_error: Locator = page.get_by_test_id("password_input_errors")
+        self.heading: Locator = page.get_by_test_id("login_text")
+        self.register_link: Locator = page.get_by_test_id("register_link")
+        self.forgot_password_link: Locator = page.get_by_test_id("forgot_password_link")
 
     def open(self):
         """Otevře přihlašovací stránku."""

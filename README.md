@@ -1,95 +1,134 @@
-# Automatizované testy pro Demo Login (kitner.cz)
+# 🧪 E2E Testovací automatizace – Portál Kitner.cz
 
-Tento projekt obsahuje sadu automatizovaných E2E testů pro přihlašovací modul webové aplikace **[http://testovani.kitner.cz](http://testovani.kitner.cz/courses)**.
-
-Testy jsou implementovány v jazyce **Python** s využitím frameworku **Playwright** a **pytest** s architekturou **Page Object Model (POM)** a **parametrizací (`@pytest.mark.parametrize`)** pro čistý a snadno udržitelný kód (DRY princip).
+Komplexní sada automatizovaných E2E testů pro portál **[testovani.kitner.cz](http://testovani.kitner.cz)** postavená na moderní Python architektuře s využitím **Playwright** a **Pytest**, návrhového vzoru **Page Object Model (POM)** s komponentami a hybridního řízení testů přes **domény a Pytest markery**.
 
 ---
 
 ## 📁 Struktura projektu
 
+Projekt přesně odpovídá modernímu standardu automatizace (*Test Project Structure*):
+
 ```text
-├── .venv/                  # Virtuální prostředí Pythonu
-├── pages/                  # Page Object Model třídy (reprezentace stránek a elementů)
+├── .github/workflows/
+│   └── tests.yml               # CI/CD: Automatické spouštění testů v GitHub Actions
+├── config/
 │   ├── __init__.py
-│   ├── base_page.py        # Základní bázová stránka se společnými metodami
-│   ├── login_page.py       # Lokátory a akce pro přihlašovací stránku (/login)
-│   └── courses_page.py     # Lokátory a akce pro stránku s kurzy a navigaci (/courses)
-├── tests/                  # Testovací scénáře
+│   └── settings.py             # ENVIRONMENT: Konstanty, URL, timeouty a načítání .env
+├── .env.example                # Šablona lokální konfigurace a přístupových údajů
+├── pyproject.toml              # CONFIGURATION: Centrální konfigurace projektu, závislostí a pytestu
+│
+├── tests/                      # TEST SUITES: Testy členěné do domén
 │   ├── __init__.py
-│   └── test_login.py       # Zrefaktorovaná parametrizovaná sada testů
-├── conftest.py             # Globální pytest fixtures (přihlašovací údaje, URL)
-├── pytest.ini              # Konfigurace spouštěče testů pytest
-├── requirements.txt        # Seznam závislostí
-└── report.html             # Vygenerovaný grafický report výsledků testů
+│   ├── conftest.py             # Globální fixtures napojené na konfiguraci
+│   ├── auth/                   # Modul: Autentizace, registrace, obnova hesel
+│   │   ├── __init__.py
+│   │   ├── test_login.py       # Pozitivní, negativní i validační scénáře přihlášení
+│   │   ├── test_logout.py      # Odhlášení a perzistence relace (Reload)
+│   │   ├── test_register.py    # Registrace, validace hesel a unikátnost
+│   │   └── test_password_reset.py # Obnova zapomenutého hesla
+│   └── navigation/             # Modul: Navigační toky a prolinkování
+│       ├── __init__.py
+│       └── test_navigation.py  # Přechody z kurzů na přihlášení a mezi formuláři
+│
+├── helpers/                    # SHARED ACTIONS: Znovupoužitelné testovací kroky (DRY)
+│   ├── __init__.py
+│   ├── auth_helpers.py         # Rychlé přihlášení a odhlášení uživatele
+│   └── course_helpers.py       # Pomocné kroky pro práci s kurzy
+│
+├── pages/                      # PAGE OBJECTS: Modely stránek a nativní lokátory
+│   ├── __init__.py
+│   ├── base_page.py            # Bázová stránka s integrací navbar komponenty
+│   ├── login_page.py           # Formulář přihlášení (/login)
+│   ├── register_page.py        # Registrační formulář (/register)
+│   ├── forgot_password_page.py # Formulář obnovy hesla (/forgot-password)
+│   ├── courses_page.py         # Přehled kurzů (/courses)
+│   └── components/             # Reusable UI komponenty
+│       ├── __init__.py
+│       └── navbar.py           # Horní navigační lišta
+│
+├── utils/                      # UTILITIES: Nezávislé pomocné nástroje
+│   ├── __init__.py
+│   └── data_generator.py       # Generátor dynamických testovacích uživatelů a e-mailů
+│
+├── data/                       # TEST DATA: Statická data pro data-driven testy
+│   └── invalid_emails.json     # Sada nevalidních formátů emailu pro validace
+│
+├── reports/                    # OUTPUT: Lokálně generované výstupy (ignorováno v Gitu)
+│   ├── html/                   # HTML reporty (report.html)
+│   └── screenshots/            # Snímky obrazovky při chybách
+│
+└── docs/                       # DOKUMENTACE: Analýzy požadavků a reporty
+    ├── požadavky_ust_podle_src.md
+    ├── TEST_ASSERTIONS_OVERVIEW.md
+    ├── TEST_EXECUTION_REPORT.md
+    └── PLAN_LOKATORY_DATA_TESTID.md
 ```
 
 ---
 
-## 🧪 Zrefaktorovaná sada testů
+## 🏷️ Pytest Markery (Hybridní spouštění)
 
-Testy jsou rozděleny do 6 modulárních testovacích funkcí, které pomocí parametrů pokrývají **14 scénářů**:
+Testy jsou označeny markery pro selektivní spouštění:
 
-### 1. `test_successful_login_variants` (Parametrizovaný Happy Path)
-- **`standard-click`**: Běžné přihlášení kliknutím na tlačítko *Přihlásit*.
-- **`enter-key`**: Odeslání formuláře stiskem klávesy *Enter*.
-- **`uppercase-email`**: Přihlášení s velkými písmeny v e-mailu (*Case Insensitivity*).
-
-### 2. `test_login_from_courses_navigation` (Integrační test)
-- Přechod z horní navigace na `/login` $\rightarrow$ přihlášení $\rightarrow$ návrat na `/courses`.
-
-### 3. `test_login_and_logout_lifecycle` (E2E životní cyklus)
-- Přihlášení $\rightarrow$ odhlášení $\rightarrow$ ověření obnovení nepřihlášeného stavu.
-
-### 4. `test_session_persists_after_page_reload` (Perzistence relace)
-- Ověření, že uživatel zůstává přihlášen i po obnovení stránky (*F5 / reload*).
-
-### 5. `test_invalid_and_incomplete_login_credentials` (Parametrizované chyby a validace)
-- **`invalid-password`**: Neplatné heslo $\rightarrow$ chybová hláška.
-- **`non-existent-user`**: Neexistující účet $\rightarrow$ chybová hláška.
-- **`empty-password-required`**: Vyplněný e-mail bez hesla $\rightarrow$ validační hláška *„The password field is required.“*
-- **`empty-form-submit`**: Prázdný formulář $\rightarrow$ zabránění odeslání.
-- **`invalid-email-format`**: Text bez e-mailového formátu $\rightarrow$ zabránění odeslání.
-
-### 6. `test_login_form_navigation_links` (Parametrizované odkazy)
-- **`forgot-password-link`**: Odkaz *„Zapomněli jste heslo?“* $\rightarrow$ `/forgot-password`.
-- **`register-link`**: Odkaz *„Zaregistrujte se“* $\rightarrow$ `/register`.
-
-### 7. `test_login_page_title_and_password_masking` (UI & Bezpečnost)
-- Kontrola HTML tagu `<title>` a maskování hesla (`type="password"`).
+| Marker | Popis | Příklad spuštění |
+| :--- | :--- | :--- |
+| **`smoke`** | Rychlé kritické scénáře (Happy Path přihlášení, registrace, navigace) | `pytest -m smoke` |
+| **`regression`** | Kompletní regresní sada (všechny negativní testy, validace a UI kontroly) | `pytest -m regression` |
+| **`auth`** | Všechny testy autentizace (přihlášení, odhlášení, registrace, hesla) | `pytest -m auth` |
+| **`navigation`** | Testy navigačních prvků | `pytest -m navigation` |
 
 ---
 
 ## 🚀 Jak testy spustit
 
-### 1. Aktivace virtuálního prostředí
+### 1. Instalace projektu (v aktivovaném virtuálním prostředí)
 ```bash
 source .venv/bin/activate
+pip install -e .
+playwright install chromium
 ```
 
-### 2. Spuštění testů na pozadí (Headless mód)
+### 2. Spuštění celé testovací sady
+Automaticky vygeneruje HTML report do `reports/html/report.html`:
 ```bash
 pytest
 ```
 
-### 3. Spuštění s viditelným oknem prohlížeče (Headed mód)
+### 3. Spuštění konkrétní domény
+```bash
+# Pouze testy přihlášení a správy účtů:
+pytest tests/auth/
+
+# Pouze testy navigace:
+pytest tests/navigation/
+```
+
+### 4. Spuštění podle markerů
+```bash
+# Pouze kritické smoke testy:
+pytest -m smoke
+
+# Pouze regresní validační testy:
+pytest -m regression
+```
+
+### 5. Spuštění s viditelným oknem (Headed mód)
 ```bash
 pytest --headed
 ```
 
-### 4. Spuštění se zpomalením kroků (pro vizuální sledování průběhu)
+### 6. Spuštění se zpomalením pro vizuální sledování
 ```bash
-pytest --headed --slowmo 1000
+pytest --headed --slowmo 500
 ```
-
-### 5. Spuštění a vygenerování HTML reportu
-```bash
-pytest --html=report.html --self-contained-html
-```
-Report si můžete otevřít v prohlížeči (soubor `report.html`).
 
 ---
 
-## 🔑 Testovací účet
-- **Email:** `tester@kitner.cz`
-- **Heslo:** `TajneHeslo123`
+## ⚙️ Konfigurace prostředí (.env)
+Pro změnu výchozí URL nebo přihlašovacích údajů vytvořte v kořenu soubor `.env` (inspirovat se můžete vzorem v `.env.example`):
+```env
+BASE_URL=http://testovani.kitner.cz
+HEADLESS=true
+TEST_USER_EMAIL=tester@kitner.cz
+TEST_USER_PASSWORD=TajneHeslo123
+```

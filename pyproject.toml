@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-automated-testing"
+version = "1.0.0"
+description = "Modern E2E Playwright test automation suite for kitner.cz portal"
+authors = [{ name = "Andrea Wanková" }]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "playwright>=1.40.0",
+    "pytest>=7.4.0",
+    "pytest-playwright>=0.4.0",
+    "pytest-html>=4.1.0",
+    "python-dotenv>=1.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pages*", "config*", "helpers*", "utils*"]
+exclude = ["tests*", "docs*", "reports*", "data*", "Požadavky*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = ["."]
+addopts = "-v --browser chromium --html=reports/html/report.html --self-contained-html"
+markers = [
+    "smoke: Kritické integrační a E2E scénáře pro rychlé ověření po nasazení",
+    "regression: Kompletní regresní sada testů",
+    "auth: Testy autentizace, registrace, odhlášení a obnovy hesla",
+    "navigation: Testy navigačních prvků a katalogu kurzů",
+    "courses: Testy katalogu a detailu kurzů",
+    "enrollment: Testy zápisu na kurzy a sekce Moje kurzy",
+    "lecturer: Testy lektorských funkcionalit a správy kurzů",
+    "profile: Testy uživatelského profilu a domovské nástěnky",
+    "security: Testy bezpečnosti, autorizace a integrity sezení"
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "scenario_id": "missing-at-sign",
+    "email": "chybi_zavinac.cz",
+    "description": "Email bez zavináče"
+  },
+  {
+    "scenario_id": "missing-username",
+    "email": "@domena.cz",
+    "description": "Email bez uživatelského jména před zavináčem"
+  },
+  {
+    "scenario_id": "missing-domain",
+    "email": "uzivatel@",
+    "description": "Email bez specifikace domény"
+  },
+  {
+    "scenario_id": "double-at-sign",
+    "email": "uzivatel@@domena.cz",
+    "description": "Dva zavináče v adrese"
+  },
+  {
+    "scenario_id": "spaces-in-email",
+    "email": "uzivatel s mezerou@domena.cz",
+    "description": "Mezera v emailové adrese"
+  }
+]

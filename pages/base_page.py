@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+from pages.components.navbar import NavbarComponent
 
 
 class BasePage:
@@ -6,6 +7,7 @@ class BasePage:
 
     def __init__(self, page: Page):
         self.page = page
+        self.navbar = NavbarComponent(page)
 
     def navigate_to(self, url: str):
         """Přejde na zadanou URL adresu."""

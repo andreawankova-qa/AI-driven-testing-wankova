@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
+*.egg-info/
+build/
+dist/
 
 # Virtual Environment
 .venv/
@@ -20,6 +23,15 @@ htmlcov/
 test-results/
 playwright-report/
 report.html
+report_demo_login.html
+reports/*.html
+reports/html/*.html
+!reports/html/.gitkeep
+reports/screenshots/*
+!reports/screenshots/.gitkeep
+
+# Environment & Secrets
+.env
 
 # macOS
 .DS_Store
