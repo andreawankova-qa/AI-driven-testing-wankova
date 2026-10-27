@@ -10,8 +10,8 @@ class BasePage:
         self.navbar = NavbarComponent(page)
 
     def navigate_to(self, url: str):
-        """Přejde na zadanou URL adresu."""
-        self.page.goto(url, wait_until="domcontentloaded")
+        """Přejde na zadanou URL adresu a počká na ustálení síťového provozu (SPA renderování)."""
+        self.page.goto(url, wait_until="networkidle")
 
     def get_title(self) -> str:
         """Vrátí titulek aktuální stránky."""

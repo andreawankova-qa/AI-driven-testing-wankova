@@ -59,6 +59,7 @@ Validace se řídí zásadami z [docs/TEST_ASSERTIONS_OVERVIEW.md](file:///Users
 - ✅ **VŽDY:** Web-first aserce Playwrightu s automatickým čekáním (`expect(locator).to_be_visible()`, `to_have_url()`, `to_have_text()`).
 - ❌ **NIKDY:** `time.sleep()`, umělé timeouty ani nativní python `assert locator.is_visible()`. (Python `assert` povolen pouze pro ne-UI datové struktury).
 - **Víceúrovňové ověřování:** Každý scénář ověřuje stav na 3 úrovních: **Routing** (URL) + **Session** (`logout_button`) + **Data State / UI Feedback** (zprávy, chybové stavy).
+- **Prevence falešné pozitivity u negativních asercí (`not_to_be_visible`):** Nikdy neověřuj absenci prvku bezprostředně po navigaci/akci bez ustálení stavu. Vždy nejprve ověř kontext (pozitivní přesměrování `to_have_url`, vykreslení layoutu) nebo počkej na dokončení síťové komunikace (`networkidle`).
 
 ---
 
