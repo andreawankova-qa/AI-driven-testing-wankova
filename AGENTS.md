@@ -15,7 +15,48 @@ Tento soubor představuje závazný soubor pravidel a standardů pro AI asistent
 
 ---
 
-## 2. 🏛️ Architektura projektu a rozdělení odpovědností (TEST PROJECT STRUCTURE)
+## 2. 🌍 Byznysový kontext aplikace a testovaná doména
+
+Testovanou aplikací je vzdělávací portál **Demo-login** na adrese [http://testovani.kitner.cz](http://testovani.kitner.cz), který slouží k nabídce, objednávání a správě IT kurzů a školení.
+
+### 👥 Uživatelské role a oprávnění (RBAC):
+1. **Návštěvník / Host (`Guest`):**
+   - Nepřihlášený uživatel.
+   - Prohlíží veřejný katalog kurzů, karty a detaily kurzů.
+   - **Nemá oprávnění k přímému zápisu na kurz** – aplikace ho vyzve k přihlášení nebo registraci.
+   - Má přístup k veřejným formulářům: registrace, přihlášení a žádost o obnovu hesla.
+2. **Zákazník / Student (`Customer`):**
+   - Běžný registrovaný a přihlášený uživatel.
+   - Může provádět **nezávaznou registraci na volné běhy kurzů**.
+   - Má přístup do sekce **Moje kurzy** (přehled svých zapsaných kurzů) a ke správě profilu.
+   - Nesmí mít přístup k lektorským administračním funkcím.
+3. **Lektor (`Lecturer`):**
+   - Uživatel se zvýšenými právy (lektorský/administrátorský účet).
+   - Má navíc přístup k lektorským funkcionalitám: **přidání nového kurzu**, vypisování nových termínů (běhů) a zobrazení seznamu zapsaných účastníků.
+
+### 📦 6 klíčových modulů aplikace a byznys toky:
+- **Modul 1: Autentizace a správa účtu (Auth):**
+  - Registrace zákazníka: ověření unikátnosti e-mailu (`The email has already been taken`), shoda hesel, maskování hesel (`type="password"`).
+  - Přihlášení: validace neplatných údajů, case-insensitivity e-mailu, odeslání tlačítkem i klávesou `Enter`.
+  - Odhlášení: okamžité zneplatnění relace a aktualizace navigační lišty.
+  - Obnova hesla: odeslání žádosti o reset zapomenutého hesla.
+- **Modul 2: Katalog a detail kurzů (Courses):**
+  - Veřejná dostupnost pro hosta, kontrola atributů karet (název, popis, cena v Kč, kapacita, obrázek).
+  - Detail kurzu, zobrazení vypsaných termínů a indikace kapacity.
+- **Modul 3: Zápis a sekce Moje kurzy (Enrollment):**
+  - Formulář nezávazné registrace: povinné telefonní číslo (min. 9 číslic).
+  - Nepovinné IČO s **přísnou matematickou validací kontrolního součtu modulo 11** (neplatné IČO zablokuje odeslání).
+  - Sekce Moje kurzy (`/my-courses`): zobrazení zapsaných kurzů zákazníka.
+- **Modul 4: Lektorská sekce (Lecturer):**
+  - Vytváření a správa kurzů a běhů pod účtem lektora.
+- **Modul 5: Navigace a profil (Navigation & Profile):**
+  - Prolinkování mezi formuláři a katalogem, uvítací dashboard (`Vítej uživateli <jméno>!`) a editace profilu.
+- **Modul 6: Bezpečnost a autorizace (Security):**
+  - Řízení přístupu (RBAC) – zákaz neautorizovaného přístupu k lektorským formulářům pro běžného zákazníka i hosta, expirace sezení, regenerace session ID.
+
+---
+
+## 3. 🏛️ Architektura projektu a rozdělení odpovědností (TEST PROJECT STRUCTURE)
 
 Projekt striktně vychází ze standardu **TEST PROJECT STRUCTURE (An ideal directory tree for Python test automation)**. Veškeré soubory v projektu musí mít své pevné místo a je přísně zakázáno vytvářet volné skripty či testy mimo tuto hierarchii:
 
@@ -86,7 +127,7 @@ Projekt striktně vychází ze standardu **TEST PROJECT STRUCTURE (An ideal dire
 
 ---
 
-## 3. ♻️ Striktní uplatňování principu DRY (Don't Repeat Yourself)
+## 4. ♻️ Striktní uplatňování principu DRY (Don't Repeat Yourself)
 
 Pro zajištění vysoké udržitelnosti a čistoty kódu platí nekompromisní zákaz duplicity:
 
@@ -104,7 +145,7 @@ Pro zajištění vysoké udržitelnosti a čistoty kódu platí nekompromisní z
 
 ---
 
-## 4. 🔍 Strategie lokátorů: Nativní `get_by_test_id` a řetězení
+## 5. 🔍 Strategie lokátorů: Nativní `get_by_test_id` a řetězení
 
 Všechny lokátory v projektu podléhají standardu popsanému v `docs/PLAN_LOKATORY_DATA_TESTID.md`:
 
@@ -125,7 +166,7 @@ Všechny lokátory v projektu podléhají standardu popsanému v `docs/PLAN_LOKA
 
 ---
 
-## 5. 🎯 Pravidla pro aserce a validace
+## 6. 🎯 Pravidla pro aserce a validace
 
 Projekt se striktně řídí principy z `docs/TEST_ASSERTIONS_OVERVIEW.md`:
 
@@ -153,7 +194,7 @@ Projekt se striktně řídí principy z `docs/TEST_ASSERTIONS_OVERVIEW.md`:
 
 ---
 
-## 6. 🏷️ Pytest Markery (Povinná kategorizace testů)
+## 7. 🏷️ Pytest Markery (Povinná kategorizace testů)
 
 Každý testovací soubor a každá testovací metoda **musí** mít přiřazeny odpovídající markery definované v `pyproject.toml`:
 
@@ -182,7 +223,7 @@ class TestLogin:
 
 ---
 
-## 7. 📝 Jazyková pravidla a dokumentace kódu
+## 8. 📝 Jazyková pravidla a dokumentace kódu
 
 - **Kód:** Všechny názvy proměnných, funkcí, metod, tříd a souborů musí být v **angličtině** a v souladu s PEP 8 (`snake_case` pro funkce a proměnné, `PascalCase` pro třídy).
 - **Docstringy a komentáře:**
@@ -192,7 +233,7 @@ class TestLogin:
 
 ---
 
-## 8. ⚡ Autonomní vývojový cyklus a ověřování (Execution Workflow)
+## 9. ⚡ Autonomní vývojový cyklus a ověřování (Execution Workflow)
 
 Při tvorbě nebo úpravě kódu postupuj podle tohoto cyklu:
 
