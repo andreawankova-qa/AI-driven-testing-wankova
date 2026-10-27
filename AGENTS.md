@@ -86,7 +86,25 @@ Projekt striktně vychází ze standardu **TEST PROJECT STRUCTURE (An ideal dire
 
 ---
 
-## 3. 🔍 Strategie lokátorů: Nativní `get_by_test_id` a řetězení
+## 3. ♻️ Striktní uplatňování principu DRY (Don't Repeat Yourself)
+
+Pro zajištění vysoké udržitelnosti a čistoty kódu platí nekompromisní zákaz duplicity:
+
+1. **Zákaz duplikace kroků v testech (Helpers & Fixtures):**
+   - Pokud se sekvence 2 a více kroků (např. přihlášení, odhlášení, naplnění formuláře, přechod do sekce) opakuje ve více testech, je **přísně zakázáno ji duplikovat v těle testů**.
+   - Takový tok **musí** být zapouzdřen do helper funkce v `helpers/` (např. `login_user()`, `register_user()`) nebo do sdílené Pytest fixture v `tests/conftest.py`.
+2. **Parametrizace namísto duplicitních metod:**
+   - Pokud test ověřuje stejnou byznysovou logiku s různými daty (např. sada nevalidních formátů e-mailu, varianty odeslání kliknutím vs. Enterem), **nikdy nevytvářej kopie testovacích metod**.
+   - Vždy použij `@pytest.mark.parametrize` s externími daty z `data/` nebo generátoru z `utils/data_generator.py`.
+3. **Komponenty pro sdílené UI (Single Source of Truth pro lokátory):**
+   - UI prvky přítomné na více stránkách (např. navigační lišta, hlavička, patička) **nesmí** být definovány na více místech.
+   - Musí být definovány jedinkrát v `pages/components/` (např. `pages/components/navbar.py`) a integrovány do příslušných Page Objects.
+4. **Zákaz duplikace konfiguračních konstant:**
+   - URL adresy, timeouty a testovací uživatelské účty existují výhradně v `config/settings.py` a do testů se předávají přes fixtures.
+
+---
+
+## 4. 🔍 Strategie lokátorů: Nativní `get_by_test_id` a řetězení
 
 Všechny lokátory v projektu podléhají standardu popsanému v `docs/PLAN_LOKATORY_DATA_TESTID.md`:
 
@@ -107,7 +125,7 @@ Všechny lokátory v projektu podléhají standardu popsanému v `docs/PLAN_LOKA
 
 ---
 
-## 4. 🎯 Pravidla pro aserce a validace
+## 5. 🎯 Pravidla pro aserce a validace
 
 Projekt se striktně řídí principy z `docs/TEST_ASSERTIONS_OVERVIEW.md`:
 
@@ -135,7 +153,7 @@ Projekt se striktně řídí principy z `docs/TEST_ASSERTIONS_OVERVIEW.md`:
 
 ---
 
-## 5. 🏷️ Pytest Markery (Povinná kategorizace testů)
+## 6. 🏷️ Pytest Markery (Povinná kategorizace testů)
 
 Každý testovací soubor a každá testovací metoda **musí** mít přiřazeny odpovídající markery definované v `pyproject.toml`:
 
@@ -164,7 +182,7 @@ class TestLogin:
 
 ---
 
-## 6. 📝 Jazyková pravidla a dokumentace kódu
+## 7. 📝 Jazyková pravidla a dokumentace kódu
 
 - **Kód:** Všechny názvy proměnných, funkcí, metod, tříd a souborů musí být v **angličtině** a v souladu s PEP 8 (`snake_case` pro funkce a proměnné, `PascalCase` pro třídy).
 - **Docstringy a komentáře:**
@@ -174,7 +192,7 @@ class TestLogin:
 
 ---
 
-## 7. ⚡ Autonomní vývojový cyklus a ověřování (Execution Workflow)
+## 8. ⚡ Autonomní vývojový cyklus a ověřování (Execution Workflow)
 
 Při tvorbě nebo úpravě kódu postupuj podle tohoto cyklu:
 
