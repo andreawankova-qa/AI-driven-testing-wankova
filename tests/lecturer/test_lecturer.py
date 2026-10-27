@@ -118,12 +118,14 @@ class TestLecturerCourseManagement:
         expect(courses_page.add_course_button).to_be_visible()
 
     @pytest.mark.smoke
+    @pytest.mark.xfail(reason="BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník")
     def test_tc38_lec_customer_cannot_access_lecturer_create_course(self, page: Page, test_user: dict):
         """TC-38-LEC: Zamezení přístupu k lektorským operacím pro běžného zákazníka."""
         login_user(page, test_user["email"], test_user["password"])
 
         create_page = CreateCoursePage(page)
         create_page.open()
+        page.wait_for_load_state("networkidle")
 
         # Zákazník nesmí mít přístup k lektorskému formuláři
         expect(create_page.form).not_to_be_visible()

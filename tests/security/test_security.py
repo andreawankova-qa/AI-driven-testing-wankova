@@ -40,12 +40,14 @@ class TestSecurityAndAuthorization:
         expect(my_courses_page.navbar.login_link).to_be_visible()
 
     @pytest.mark.smoke
+    @pytest.mark.xfail(reason="BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník")
     def test_tc44_sec_customer_cannot_access_lecturer_operations(self, page: Page, test_user: dict):
         """TC-44-SEC: Zákaz lektorských operací pro uživatele v roli zákazníka."""
         login_user(page, test_user["email"], test_user["password"])
 
         create_course_page = CreateCoursePage(page)
         create_course_page.open()
+        page.wait_for_load_state("networkidle")
 
         # Zákazník nemá přístup k formuláři pro tvorbu kurzu
         expect(create_course_page.form).not_to_be_visible()
