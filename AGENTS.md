@@ -42,6 +42,7 @@ Veškerý kód musí striktně patřit do jedné z 9 definovaných vrstev. Je za
 1. **Zákaz duplikace kroků v testech:** Sekvence $\ge 2$ kroků opakovaná ve více testech **musí** být zapouzdřena do helper funkce v `helpers/` nebo Pytest fixture v `tests/conftest.py`.
 2. **Parametrizace:** Pro testování více variant/vstupů vždy použij `@pytest.mark.parametrize` namísto kopírování testovacích metod.
 3. **Single Source of Truth pro UI:** Společné prvky (navbar, hlavička) definuj jedinkrát v `pages/components/` a integruj do Page Objects.
+4. **Dynamická data a idempotence:** Pro vytváření nových entit (registrace, nový kurz) vždy generuj unikátní data přes `utils/data_generator.py`, aby testy neselhávaly při opakovaném běhu na duplicitách.
 
 ---
 
@@ -71,6 +72,8 @@ Každý testovací soubor a metoda **musí** mít dva povinné typy markerů dle
 ## 8. 📝 Jazyková pravidla a formát kódu
 - **Kód:** Názvy proměnných, funkcí, tříd a selektorů výhradně v **angličtině** (PEP 8).
 - **Docstringy a komentáře:** Výhradně v **češtině**. U testů vždy začínej ID testu: `"""TCxx: Stručný popis scénáře."""`.
+- **Struktura testu (AAA):** Kód testu logicky strukturuj do fází **Arrange** (příprava), **Act** (akce) a **Assert** (validace).
+- **Izolace a nezávislost:** Každý test musí být plně autonomní a spustitelný samostatně i v libovolném pořadí (čistý stav bez spoléhání na předchozí testy).
 
 ---
 
