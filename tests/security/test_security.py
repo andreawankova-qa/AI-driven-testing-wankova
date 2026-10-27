@@ -15,6 +15,8 @@ from pages.profile_page import ProfilePage
 from pages.my_courses_page import MyCoursesPage
 from pages.create_course_page import CreateCoursePage
 from pages.course_detail_page import CourseDetailPage
+from pages.courses_page import CoursesPage
+from pages.login_page import LoginPage
 from helpers.auth_helpers import login_user, login_lecturer, logout_user
 from config.settings import settings
 
@@ -35,7 +37,7 @@ class TestSecurityAndAuthorization:
 
         # 2. Pokus o přístup na /my-courses bez přihlášení
         my_courses_page.open()
-        expect(page.get_by_test_id("navigation").get_by_test_id("login_link")).to_be_visible()
+        expect(my_courses_page.navbar.login_link).to_be_visible()
 
     @pytest.mark.smoke
     def test_tc44_sec_customer_cannot_access_lecturer_operations(self, page: Page, test_user: dict):
@@ -52,16 +54,18 @@ class TestSecurityAndAuthorization:
     def test_tc45_sec_lecturer_cannot_enroll_as_customer(self, page: Page):
         """TC-45-SEC: Zákaz zápisu na kurz pro uživatele v roli lektora."""
         login_lecturer(page)
+        courses_page = CoursesPage(page)
 
         # Lektor otevře katalog
-        expect(page.get_by_test_id("courses_header")).to_be_visible()
+        expect(courses_page.courses_header).to_be_visible()
         # V horní liště má tlačítko pro přidání kurzu, nikoliv klientské registrace
-        expect(page.get_by_test_id("courses_header").get_by_test_id("registration_link")).to_have_text("Přidat kurz")
+        expect(courses_page.add_course_button).to_have_text("Přidat kurz")
 
     @pytest.mark.security
     def test_tc46_sec_csrf_cookie_present_for_stateful_forms(self, page: Page, context: BrowserContext):
         """TC-46-SEC: Ochrana formulářů CSRF tokenem (přítomnost XSRF-TOKEN)."""
-        page.goto(f"{settings.BASE_URL}/login")
+        login_page = LoginPage(page)
+        login_page.open()
         page.wait_for_load_state("networkidle")
 
         cookies = context.cookies()

@@ -44,15 +44,15 @@ class TestCoursesCatalog:
         first_card = courses_page.course_cards.first
         expect(first_card).to_be_visible()
 
-        # Kontrola názvu, popisu, ceny, kapacity a náhledu
-        expect(first_card.get_by_test_id("course_name")).to_be_visible()
-        expect(first_card.get_by_test_id("course_description")).to_be_visible()
-        expect(first_card.get_by_test_id("course_price")).to_be_visible()
-        expect(first_card.get_by_test_id("course_capacity")).to_be_visible()
-        expect(first_card.get_by_test_id("course_image")).to_be_visible()
+        # Kontrola názvu, popisu, ceny, kapacity a náhledu přes Page Object
+        expect(courses_page.get_card_name(first_card)).to_be_visible()
+        expect(courses_page.get_card_description(first_card)).to_be_visible()
+        expect(courses_page.get_card_price(first_card)).to_be_visible()
+        expect(courses_page.get_card_capacity(first_card)).to_be_visible()
+        expect(courses_page.get_card_image(first_card)).to_be_visible()
 
         # Cena obsahuje měnu a je zaokrouhlena (např. Kč)
-        price_text = first_card.get_by_test_id("course_price").inner_text()
+        price_text = courses_page.get_card_price(first_card).inner_text()
         assert "Kč" in price_text or "kč" in price_text.lower() or any(char.isdigit() for char in price_text)
 
     @pytest.mark.smoke
