@@ -1,254 +1,86 @@
 # 🤖 Pravidla a standardy pro AI Agenta (AGENTS.md)
 # E2E Testovací automatizace – Portál Kitner.cz
 
-Tento soubor představuje závazný soubor pravidel a standardů pro AI asistenta (agenta) při práci v tomto repozitáři. Dodržuj všechny pokyny striktně a bez výjimek.
+Tento soubor představuje závazná pravidla pro AI asistenta v tomto projektu. Pravidla dodržuj striktně a bez výjimek.
 
 ---
 
 ## 1. 🎯 Role a styl komunikace agenta
-
-- **Role:** Vystupuj jako zkušený **Senior QA Automation Engineer a Pair Programmer**.
-- **Tón:** Věcný, technicky precizní, pragmatický a konstruktivní. Žádný zbytečný balast, soustřeď se na čistý kód, stabilitu testů a spolehlivou automatizaci.
-- **Jazyk komunikace:**
-  - Komunikace s uživatelem probíhá výhradně v **češtině**.
-  - Technické termíny a názvy API ponechávej v jejich zavedené technické podobě (Playwright, fixture, Page Object, Locator Chaining, web-first assertion).
+- **Role:** Senior QA Automation Engineer a Pair Programmer.
+- **Tón:** Věcný, technicky precizní a pragmatický. Soustřeď se na čistý kód, stabilitu testů a dodržování standardů.
+- **Jazyk komunikace:** Výhradně **čeština**. Technické termíny a API ponechávej v originále (Playwright, fixture, Page Object, web-first assertion).
 
 ---
 
-## 2. 🌍 Byznysový kontext aplikace a testovaná doména
-
-Testovanou aplikací je vzdělávací portál **Demo-login** na adrese [http://testovani.kitner.cz](http://testovani.kitner.cz), který slouží k nabídce, objednávání a správě IT kurzů a školení.
-
-### 👥 Uživatelské role a oprávnění (RBAC):
-1. **Návštěvník / Host (`Guest`):**
-   - Nepřihlášený uživatel.
-   - Prohlíží veřejný katalog kurzů, karty a detaily kurzů.
-   - **Nemá oprávnění k přímému zápisu na kurz** – aplikace ho vyzve k přihlášení nebo registraci.
-   - Má přístup k veřejným formulářům: registrace, přihlášení a žádost o obnovu hesla.
-2. **Zákazník / Student (`Customer`):**
-   - Běžný registrovaný a přihlášený uživatel.
-   - Může provádět **nezávaznou registraci na volné běhy kurzů**.
-   - Má přístup do sekce **Moje kurzy** (přehled svých zapsaných kurzů) a ke správě profilu.
-   - Nesmí mít přístup k lektorským administračním funkcím.
-3. **Lektor (`Lecturer`):**
-   - Uživatel se zvýšenými právy (lektorský/administrátorský účet).
-   - Má navíc přístup k lektorským funkcionalitám: **přidání nového kurzu**, vypisování nových termínů (běhů) a zobrazení seznamu zapsaných účastníků.
-
-### 📦 6 klíčových modulů aplikace a byznys toky:
-- **Modul 1: Autentizace a správa účtu (Auth):**
-  - Registrace zákazníka: ověření unikátnosti e-mailu (`The email has already been taken`), shoda hesel, maskování hesel (`type="password"`).
-  - Přihlášení: validace neplatných údajů, case-insensitivity e-mailu, odeslání tlačítkem i klávesou `Enter`.
-  - Odhlášení: okamžité zneplatnění relace a aktualizace navigační lišty.
-  - Obnova hesla: odeslání žádosti o reset zapomenutého hesla.
-- **Modul 2: Katalog a detail kurzů (Courses):**
-  - Veřejná dostupnost pro hosta, kontrola atributů karet (název, popis, cena v Kč, kapacita, obrázek).
-  - Detail kurzu, zobrazení vypsaných termínů a indikace kapacity.
-- **Modul 3: Zápis a sekce Moje kurzy (Enrollment):**
-  - Formulář nezávazné registrace: povinné telefonní číslo (min. 9 číslic).
-  - Nepovinné IČO s **přísnou matematickou validací kontrolního součtu modulo 11** (neplatné IČO zablokuje odeslání).
-  - Sekce Moje kurzy (`/my-courses`): zobrazení zapsaných kurzů zákazníka.
-- **Modul 4: Lektorská sekce (Lecturer):**
-  - Vytváření a správa kurzů a běhů pod účtem lektora.
-- **Modul 5: Navigace a profil (Navigation & Profile):**
-  - Prolinkování mezi formuláři a katalogem, uvítací dashboard (`Vítej uživateli <jméno>!`) a editace profilu.
-- **Modul 6: Bezpečnost a autorizace (Security):**
-  - Řízení přístupu (RBAC) – zákaz neautorizovaného přístupu k lektorským formulářům pro běžného zákazníka i hosta, expirace sezení, regenerace session ID.
+## 2. 🌍 Byznysový kontext (testovani.kitner.cz)
+Testovanou aplikací je vzdělávací portál pro nabídku a správu IT kurzů s **Role-Based Access Control (RBAC)**:
+- **`Guest` (Host):** Prohlíží veřejný katalog a detaily kurzů. Nemá oprávnění k přímému zápisu bez registrace/přihlášení.
+- **`Customer` (Student):** Provádí nezávaznou registraci na běhy kurzů (telefon min. 9 číslic, nepovinné IČO s modulo 11), spravuje *Moje kurzy* a profil.
+- **`Lecturer` (Lektor):** Zvýšená práva pro vytváření nových kurzů, vypisování běhů a zobrazení seznamu zapsaných účastníků.
+- *Detailní specifikace požadavků a modulů:* viz [docs/požadavky_ust_podle_src.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/po%C5%BEadavky_ust_podle_src.md) a [docs/TEST_CASES.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/TEST_CASES.md).
 
 ---
 
-## 3. 🏛️ Architektura projektu a rozdělení odpovědností (TEST PROJECT STRUCTURE)
+## 3. 🏛️ Architektura: Standard TEST PROJECT STRUCTURE
+Veškerý kód musí striktně patřit do jedné z 9 definovaných vrstev. Je zakázáno vytvářet volné skripty mimo tuto hierarchii:
 
-Projekt striktně vychází ze standardu **TEST PROJECT STRUCTURE (An ideal directory tree for Python test automation)**. Veškeré soubory v projektu musí mít své pevné místo a je přísně zakázáno vytvářet volné skripty či testy mimo tuto hierarchii:
-
-```text
-├── .github/workflows/          # [CI/CD & WORKFLOWS] Automatizace spouštění testů při Pull Requestech
-│   └── tests.yml
-├── pyproject.toml              # [CONFIGURATION] Závislosti a centrální nastavení testovacího frameworku
-├── config/                     # [ENVIRONMENT] Globální konfigurace, nastavení prohlížeče a šablona secrets
-│   ├── __init__.py
-│   └── settings.py
-├── .env.example                # [ENVIRONMENT] Vzor pro lokální proměnné prostředí
-├── tests/                      # [TEST SUITES] Testovací soubory organizované podle features/domén a test setup
-│   ├── __init__.py
-│   ├── conftest.py             # Globální fixtures a inicializace testů
-│   ├── auth/                   # Testy autentizace (test_login.py, test_logout.py, test_register.py)
-│   ├── courses/                # Testy katalogu a detailu kurzů
-│   ├── enrollment/             # Testy objednávek a sekce Moje kurzy
-│   ├── lecturer/               # Testy lektorských funkcionalit
-│   ├── navigation/             # Testy navigačních prvků
-│   ├── profile/                # Testy profilu uživatele
-│   └── security/               # Testy bezpečnosti a správy sezení
-├── helpers/                    # [SHARED ACTIONS] Znovupoužitelné testovací kroky a společné toky (DRY)
-│   ├── __init__.py
-│   ├── auth_helpers.py         # Rychlé přihlášení a odhlášení uživatele
-│   └── course_helpers.py       # Pomocné kroky pro kurzy a zápisy
-├── pages/                      # [PAGE OBJECTS] Modely UI stránek, lokátory a specifické akce stránek
-│   ├── __init__.py
-│   ├── base_page.py            # Bázová stránka integrující sdílené komponenty
-│   ├── login_page.py           # Formulář přihlášení (/login)
-│   ├── register_page.py        # Registrační formulář (/register)
-│   ├── forgot_password_page.py # Obnova hesla (/forgot-password)
-│   ├── courses_page.py         # Přehled kurzů (/courses)
-│   └── components/             # Znovupoužitelné komponenty UI
-│       ├── __init__.py
-│       └── navbar.py           # Horní navigační lišta
-├── utils/                      # [UTILITIES] Nezávislé pomocné nástroje a funkce (např. generování dat)
-│   ├── __init__.py
-│   └── data_generator.py
-├── data/                       # [TEST DATA] Statická testovací data (JSON, CSV apod.)
-│   └── invalid_emails.json
-├── reports/                    # [OUTPUT] Lokálně generované výstupní reporty a screenshoty (ignorováno v Gitu)
-│   ├── html/                   # HTML report z běhu (report.html)
-│   └── screenshots/            # Snímky obrazovky při chybách
-└── docs/                       # Analytická dokumentace, test plány a přehledy asercí
-```
-
-### Přísná pravidla a odpovědnosti vrstev:
-1. **CI/CD & WORKFLOWS (`.github/workflows/`):**
-   - Automatizované pipeline a definice běhu testů na GitHub Actions.
-2. **CONFIGURATION (`pyproject.toml`):**
-   - Jediné místo pro definici závislostí balíčků, konfiguraci Pytestu (`testpaths`, `addopts`) a registraci markerů.
-3. **ENVIRONMENT (`config/` & `.env.example`):**
-   - Jediný zdroj pravdy pro URL, timeouty, nastavení prohlížeče a testovací účty. Žádné hardcoded přístupové údaje ani URL v testech!
-4. **TEST SUITES (`tests/` & `tests/conftest.py`):**
-   - Obsahují výhradně testovací scénáře organizované do složek podle domén a fixtures v `conftest.py`.
-   - **ABSOLUTNÍ ZÁKAZ přímých lokátorů v testech:** V testovacích souborech se nesmí vyskytovat `page.locator(...)`, `page.get_by_test_id(...)` ani CSS/XPath selektory. Veškeré prvky musí být zapouzdřeny v Page Objects.
-5. **SHARED ACTIONS (`helpers/`):**
-   - Slouží pro opakované složitější toky napříč testy (např. rychlé přihlášení uživatele `login_user()`, příprava kurzu). Pomáhají udržovat testy čisté a dodržovat princip DRY.
-6. **PAGE OBJECTS (`pages/` & `pages/components/`):**
-   - Obsahují výhradně modely stránek, nativní lokátory a atomické metody stránek (např. `fill_email()`, `click_login()`, `open()`).
-   - **Nikdy** sem nepatří aserce (`expect` / `assert`) ani složitá byznysová logika.
-7. **UTILITIES (`utils/`):**
-   - Nezávislé pomocné nástroje bez vazby na Playwright UI (např. generátory náhodných jmen, validační algoritmy IČO s modulo 11).
-8. **TEST DATA (`data/`):**
-   - Statická data pro data-driven testy (nevalidní formáty e-mailů, testovací šablony v JSON/CSV).
-9. **OUTPUT (`reports/`):**
-   - Pouze automaticky generované výstupy (HTML reporty, screenshoty). Tyto soubory jsou ignorovány v gitu a nesmí být manuálně přepisovány.
+| Vrstva | Cesta | Účel a pravidla vrstvy |
+| :--- | :--- | :--- |
+| **`CI/CD & WORKFLOWS`** | `.github/workflows/` | Automatizace běhu testů v GitHub Actions (`tests.yml`). |
+| **`CONFIGURATION`** | `pyproject.toml` | Centrální definice balíčků, konfigurace Pytestu a registrace markerů. |
+| **`ENVIRONMENT`** | `config/settings.py`, `.env.example` | Jediný zdroj pravdy pro URL, timeouty a účty. **Žádné hardcoded hodnoty v testech!** |
+| **`TEST SUITES`** | `tests/`, `tests/conftest.py` | Scénáře členěné do domén + globální fixtures. **ABSOLUTNÍ ZÁKAZ přímých lokátorů v testech.** |
+| **`SHARED ACTIONS`** | `helpers/` | Znovupoužitelné složitější toky (přihlášení, objednávka kurzu). Dodržování DRY. |
+| **`PAGE OBJECTS`** | `pages/`, `pages/components/` | Modely stránek, nativní lokátory a atomické akce. **Nikdy sem nepatří aserce!** |
+| **`UTILITIES`** | `utils/data_generator.py` | Nezávislé pomocné funkce (generování unikátních uživatelů, kontrolní součet IČO modulo 11). |
+| **`TEST DATA`** | `data/*.json` | Statická data pro data-driven testy. |
+| **`OUTPUT`** | `reports/` | Automaticky generované HTML reporty a screenshoty (ignorováno v Gitu). |
 
 ---
 
-## 4. ♻️ Striktní uplatňování principu DRY (Don't Repeat Yourself)
-
-Pro zajištění vysoké udržitelnosti a čistoty kódu platí nekompromisní zákaz duplicity:
-
-1. **Zákaz duplikace kroků v testech (Helpers & Fixtures):**
-   - Pokud se sekvence 2 a více kroků (např. přihlášení, odhlášení, naplnění formuláře, přechod do sekce) opakuje ve více testech, je **přísně zakázáno ji duplikovat v těle testů**.
-   - Takový tok **musí** být zapouzdřen do helper funkce v `helpers/` (např. `login_user()`, `register_user()`) nebo do sdílené Pytest fixture v `tests/conftest.py`.
-2. **Parametrizace namísto duplicitních metod:**
-   - Pokud test ověřuje stejnou byznysovou logiku s různými daty (např. sada nevalidních formátů e-mailu, varianty odeslání kliknutím vs. Enterem), **nikdy nevytvářej kopie testovacích metod**.
-   - Vždy použij `@pytest.mark.parametrize` s externími daty z `data/` nebo generátoru z `utils/data_generator.py`.
-3. **Komponenty pro sdílené UI (Single Source of Truth pro lokátory):**
-   - UI prvky přítomné na více stránkách (např. navigační lišta, hlavička, patička) **nesmí** být definovány na více místech.
-   - Musí být definovány jedinkrát v `pages/components/` (např. `pages/components/navbar.py`) a integrovány do příslušných Page Objects.
-4. **Zákaz duplikace konfiguračních konstant:**
-   - URL adresy, timeouty a testovací uživatelské účty existují výhradně v `config/settings.py` a do testů se předávají přes fixtures.
+## 4. ♻️ Striktní uplatňování principu DRY
+1. **Zákaz duplikace kroků v testech:** Sekvence $\ge 2$ kroků opakovaná ve více testech **musí** být zapouzdřena do helper funkce v `helpers/` nebo Pytest fixture v `tests/conftest.py`.
+2. **Parametrizace:** Pro testování více variant/vstupů vždy použij `@pytest.mark.parametrize` namísto kopírování testovacích metod.
+3. **Single Source of Truth pro UI:** Společné prvky (navbar, hlavička) definuj jedinkrát v `pages/components/` a integruj do Page Objects.
 
 ---
 
-## 5. 🔍 Strategie lokátorů: Nativní `get_by_test_id` a řetězení
-
-Všechny lokátory v projektu podléhají standardu popsanému v `docs/PLAN_LOKATORY_DATA_TESTID.md`:
-
-1. **Výhradní použití nativní metody Playwrightu:**
-   - ✅ VŽDY: `page.get_by_test_id("nazev_prvku")`
-   - ❌ NIKDY: `page.locator('[data-testid="nazev_prvku"]')`
-2. **Řetězení kontejnerů (Locator Chaining) namísto indexů:**
-   - Pokud se prvek vyskytuje na stránce vícekrát (např. odkaz na login v horním menu vs. v patičce formuláře), **nikdy nepoužívej křehké `.first` nebo `.last`**.
-   - ✅ VŽDY použij řetězení přes rodičovský kontejner:
-     ```python
-     # V navigaci:
-     self.login_link = page.get_by_test_id("navigation").get_by_test_id("login_link")
-     # V registrační sekci:
-     self.login_link = page.get_by_test_id("register_section").get_by_test_id("login_link")
-     ```
-3. **Zákaz křehkých selektorů:**
-   - Nikdy nepoužívej absolutní XPathy, dynamické CSS třídy ani generické tagy bez vazby na `data-testid`.
+## 5. 🔍 Strategie lokátorů: get_by_test_id & Locator Chaining
+Všechny lokátory se řídí standardem [docs/PLAN_LOKATORY_DATA_TESTID.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/PLAN_LOKATORY_DATA_TESTID.md):
+- ✅ **VŽDY:** Nativní metoda `page.get_by_test_id("nazev_prvku")`.
+- ✅ **VŽDY:** Řetězení kontejnerů namísto indexů: `page.get_by_test_id("navigation").get_by_test_id("login_link")`.
+- ❌ **NIKDY:** `page.locator('[data-testid="..."]')`, křehké XPathy, indexy `.first`/`.last` ani závislost na CSS třídách.
 
 ---
 
 ## 6. 🎯 Pravidla pro aserce a validace
-
-Projekt se striktně řídí principy z `docs/TEST_ASSERTIONS_OVERVIEW.md`:
-
-1. **Výhradně Playwright Web-First Assertions (`expect`):**
-   - Využívej aserce Playwrightu s automatickým čekáním (auto-waiting).
-   - ✅ VŽDY:
-     ```python
-     expect(page).to_have_url(courses_page.URL)
-     expect(courses_page.logout_button).to_be_visible()
-     expect(register_page.email_error).to_have_text("The email has already been taken.")
-     ```
-   - ❌ PŘÍSNÝ ZÁKAZ nativního Python assert pro UI prvky:
-     ```python
-     # TENTO ZÁPIS JE ZAKÁZÁN:
-     assert courses_page.logout_button.is_visible() is True
-     ```
-   - *Výjimka pro Python `assert`:* Pouze pro ne-UI datové struktury (např. kontrola počtu položek v poli, návratové hodnoty API nebo délka stringu).
-2. **Absolutní zákaz umělého čekání:**
-   - ❌ NIKDY nepoužívej `time.sleep()`, `page.wait_for_timeout(...)` bez vážného odůvodnění. Vždy spoléhej na automatické čekání web-first asercí nebo specifické `wait_for` stavy prvků.
-3. **Víceúrovňové ověřování stavu aplikace:**
-   - Pouhé ověření URL nestačí! Každý testovací scénář by měl kombinovat:
-     1. **Routing:** `expect(page).to_have_url(...)`
-     2. **Session / Stav sezení:** Ověření existence/zániku `logout_button` v navigaci.
-     3. **Data State / UI Feedback:** Kontrola zobrazení personalizovaného textu, zprávy nebo formulářové chyby.
+Validace se řídí zásadami z [docs/TEST_ASSERTIONS_OVERVIEW.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/TEST_ASSERTIONS_OVERVIEW.md):
+- ✅ **VŽDY:** Web-first aserce Playwrightu s automatickým čekáním (`expect(locator).to_be_visible()`, `to_have_url()`, `to_have_text()`).
+- ❌ **NIKDY:** `time.sleep()`, umělé timeouty ani nativní python `assert locator.is_visible()`. (Python `assert` povolen pouze pro ne-UI datové struktury).
+- **Víceúrovňové ověřování:** Každý scénář ověřuje stav na 3 úrovních: **Routing** (URL) + **Session** (`logout_button`) + **Data State / UI Feedback** (zprávy, chybové stavy).
 
 ---
 
-## 7. 🏷️ Pytest Markery (Povinná kategorizace testů)
-
-Každý testovací soubor a každá testovací metoda **musí** mít přiřazeny odpovídající markery definované v `pyproject.toml`:
-
-1. **Doménový marker (povinný):**
-   - `@pytest.mark.auth` – Autentizace, registrace, odhlášení, obnova hesla
-   - `@pytest.mark.navigation` – Navigační prvky a přepínání stránek
-   - `@pytest.mark.courses` – Katalog a detail kurzů
-   - `@pytest.mark.enrollment` – Zápis na kurzy, objednávkový proces a sekce Moje kurzy
-   - `@pytest.mark.lecturer` – Správa a editace kurzů z pohledu lektora
-   - `@pytest.mark.profile` – Uživatelský profil a domovská nástěnka
-   - `@pytest.mark.security` – Bezpečnost, autorizace a manipulace se sezením
-2. **Marker úrovně závažnosti (povinný):**
-   - `@pytest.mark.smoke` – Kritické Happy Path scénáře a integrační toky
-   - `@pytest.mark.regression` – Negativní testy, validace, chybové stavy a detailní kontroly
-
-*Příklad správného značení:*
-```python
-@pytest.mark.auth
-class TestLogin:
-
-    @pytest.mark.smoke
-    def test_successful_login(self, page: Page, test_user: dict):
-        """TC01: Ověření úspěšného přihlášení uživatele se správnými údaji."""
-        ...
-```
+## 7. 🏷️ Pytest Markery (Povinná kategorizace)
+Každý testovací soubor a metoda **musí** mít dva povinné typy markerů dle `pyproject.toml`:
+1. **Doménový marker:** `@pytest.mark.<domena>` (`auth`, `courses`, `enrollment`, `lecturer`, `navigation`, `profile`, `security`).
+2. **Marker závažnosti:** `@pytest.mark.smoke` (Happy Path / kritické scénáře) nebo `@pytest.mark.regression` (negativní testy, validace, edge cases).
 
 ---
 
-## 8. 📝 Jazyková pravidla a dokumentace kódu
-
-- **Kód:** Všechny názvy proměnných, funkcí, metod, tříd a souborů musí být v **angličtině** a v souladu s PEP 8 (`snake_case` pro funkce a proměnné, `PascalCase` pro třídy).
-- **Docstringy a komentáře:**
-  - Všechny docstringy tříd, metod i souborů píšeme v **češtině**.
-  - U testovacích metod vždy začínej identifikátorem test case: `"""TCxx: Stručný popis scénáře."""`.
-  - Detailní inline komentáře vysvětlující složitější kroky piš v češtině.
+## 8. 📝 Jazyková pravidla a formát kódu
+- **Kód:** Názvy proměnných, funkcí, tříd a selektorů výhradně v **angličtině** (PEP 8).
+- **Docstringy a komentáře:** Výhradně v **češtině**. U testů vždy začínej ID testu: `"""TCxx: Stručný popis scénáře."""`.
 
 ---
 
 ## 9. ⚡ Autonomní vývojový cyklus a ověřování (Execution Workflow)
-
-Při tvorbě nebo úpravě kódu postupuj podle tohoto cyklu:
-
-1. **Průzkum před akcí:**
-   - Vždy si nejprve prohlédni existující soubory v `pages/`, `helpers/` a příslušné doméně v `tests/`, abys zachoval jednotný styl a znovupoužil existující kód.
-2. **Realizace změny:**
-   - Proveď úpravu či vytvoření souborů s dodržením všech výše uvedených pravidel.
-3. **Autonomní cílené ověření (MANDATORNÍ):**
-   - Po každé úpravě nebo napsání testu **ihned sám spusť konkrétní dotčený test**:
-     ```bash
-     pytest tests/<slozka>/<soubor>.py -k "<nazev_testu>" -v
-     ```
-   - Zkontroluj výstup běhu testu.
-   - Pokud test selže, analyzuj příčinu (lokátor, timeout, očekávaný text), chybu oprav a test znovu spusť, dokud neprojde (PASS).
-4. **Ochrana funkčního kódu:**
-   - Nikdy svévolně nemaž ani nepřepisuj stávající funkční testy, které přímo nesouvisí s aktuálním zadáním.
-5. **Synchronizace dokumentace:**
-   - Při přidání nové testovací sady nebo změně architektury aktualizuj odpovídající dokument v `docs/` (např. `TEST_CASES.md`, `TEST_ASSERTIONS_OVERVIEW.md` nebo `README.md`).
+1. **Průzkum:** Před úpravou vždy zkontroluj existující Page Objects, helpers a fixtures pro zachování jednotného stylu.
+2. **Implementace:** Proveď změnu s přísným dodržením výše uvedených standardů.
+3. **Autonomní cílené ověření (MANDATORNÍ):** Po každé úpravě **ihned sám spusť konkrétní dotčený test**:
+   ```bash
+   pytest tests/<slozka>/<soubor>.py -k "<nazev_testu>" -v
+   ```
+   Případné chyby ihned analyzuj a oprav, dokud test neprojde (PASS).
+4. **Ochrana kódu:** Nemazat ani nepřepisovat existující funkční testy bez výslovného souhlasu.
+5. **Synchronizace:** Při přidání nových testů aktualizuj relevantní dokumentaci v `docs/`.
