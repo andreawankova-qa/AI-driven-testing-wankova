@@ -33,6 +33,7 @@ class TestSecurityAndAuthorization:
 
         # 1. Pokus o přístup na /profile bez přihlášení
         profile_page.open()
+        expect(profile_page.navbar.login_link).to_be_visible()
         expect(profile_page.form).not_to_be_visible()
 
         # 2. Pokus o přístup na /my-courses bez přihlášení
@@ -64,6 +65,7 @@ class TestSecurityAndAuthorization:
         expect(courses_page.add_course_button).to_have_text("Přidat kurz")
 
     @pytest.mark.security
+    @pytest.mark.smoke
     def test_tc46_sec_csrf_cookie_present_for_stateful_forms(self, page: Page, context: BrowserContext):
         """TC-46-SEC: Ochrana formulářů CSRF tokenem (přítomnost XSRF-TOKEN)."""
         login_page = LoginPage(page)
@@ -78,6 +80,7 @@ class TestSecurityAndAuthorization:
         assert has_security_cookie, f"Očekáván bezpečnostní token v cookies, nalezeno: {cookie_names}"
 
     @pytest.mark.security
+    @pytest.mark.regression
     def test_tc47_sec_session_regeneration_on_login_and_logout(self, page: Page, context: BrowserContext, test_user: dict):
         """TC-47-SEC: Regenerace session ID při přihlášení a odhlášení (ochrana proti Session Fixation)."""
         page.goto(f"{settings.BASE_URL}/login")
@@ -99,4 +102,6 @@ class TestSecurityAndAuthorization:
         # Odhlášení
         logout_user(page)
         logged_out_cookies = {c["name"]: c["value"] for c in context.cookies()}
-        assert "logout_button" not in page.content()
+        courses_page = CoursesPage(page)
+        expect(courses_page.login_link).to_be_visible()
+        expect(courses_page.logout_button).not_to_be_visible()

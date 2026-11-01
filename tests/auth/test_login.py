@@ -8,11 +8,14 @@ Architektura testů:
 - Markery: @pytest.mark.auth, @pytest.mark.smoke, @pytest.mark.regression
 """
 
+import re
 import pytest
 from playwright.sync_api import Page, expect
 from pages.login_page import LoginPage
 from pages.courses_page import CoursesPage
-from utils.data_generator import load_json_data
+from pages.register_page import RegisterPage
+from utils.data_generator import load_json_data, generate_random_user
+from helpers.auth_helpers import logout_user
 from config.settings import settings
 
 
@@ -34,10 +37,10 @@ class TestLogin:
         ],
         ids=["standard-click", "enter-key", "uppercase-email"]
     )
-    def test_successful_login_variants(
+    def test_tc06_auth_successful_login_variants(
         self, page: Page, test_user: dict, email_transformer, submit_method: str, test_id: str
     ):
-        """TC01: Ověření úspěšného přihlášení uživatele (Happy Path a jeho varianty)."""
+        """TC-06-AUTH: Ověření úspěšného přihlášení uživatele (Happy Path a jeho varianty)."""
         login_page = LoginPage(page)
         courses_page = CoursesPage(page)
 
@@ -59,8 +62,9 @@ class TestLogin:
         expect(courses_page.logout_button).to_have_text("Odhlásit se")
 
     @pytest.mark.smoke
-    def test_lecturer_successful_login_and_rights(self, page: Page, lecturer_user: dict):
-        """TC02: Úspěšné přihlášení lektora a ověření lektorských práv (přidat kurz)."""
+    @pytest.mark.lecturer
+    def test_tc37_lec_lecturer_successful_login_and_rights(self, page: Page, lecturer_user: dict):
+        """TC-37-LEC: Úspěšné přihlášení lektora a ověření lektorských práv (přidat kurz)."""
         login_page = LoginPage(page)
         courses_page = CoursesPage(page)
 
@@ -82,7 +86,7 @@ class TestLogin:
     # 2. NEGATIVNÍ A VALIDAČNÍ SCÉNÁŘE
     # =========================================================================
 
-    @pytest.mark.regression
+    @pytest.mark.smoke
     @pytest.mark.parametrize(
         "email, password, error_field, expected_error_text",
         [
@@ -98,10 +102,10 @@ class TestLogin:
             "empty-form-submit",
         ]
     )
-    def test_invalid_and_incomplete_login_credentials(
+    def test_tc07_auth_invalid_and_incomplete_login_credentials(
         self, page: Page, email: str, password: str, error_field: str, expected_error_text: str
     ):
-        """TC03: Negativní a validační test pro chybné či neúplné přihlašovací údaje."""
+        """TC-07-AUTH: Negativní a validační test pro chybné či neúplné přihlašovací údaje."""
         login_page = LoginPage(page)
         login_page.open()
 
@@ -129,8 +133,8 @@ class TestLogin:
         load_json_data("invalid_emails.json"),
         ids=lambda item: item["scenario_id"]
     )
-    def test_invalid_email_format_validation(self, page: Page, item: dict):
-        """TC04: Data-driven ověření zamezení odeslání při neplatných formátech e-mailu (ze souboru data/invalid_emails.json)."""
+    def test_tc08_auth_invalid_email_format_validation(self, page: Page, item: dict):
+        """TC-08-AUTH: Data-driven ověření zamezení odeslání při neplatných formátech e-mailu (ze souboru data/invalid_emails.json)."""
         login_page = LoginPage(page)
         login_page.open()
 
@@ -145,18 +149,18 @@ class TestLogin:
     # 3. UI A BEZPEČNOSTNÍ KONTROLY
     # =========================================================================
 
-    @pytest.mark.regression
+    @pytest.mark.smoke
     def test_login_page_title_and_password_masking(self, page: Page):
-        """TC05: Kontrola metadat stránky (<title>) a bezpečnostního maskování hesla."""
+        """TC-06-AUTH: Kontrola metadat stránky (<title>) a bezpečnostního maskování hesla."""
         login_page = LoginPage(page)
         login_page.open()
 
         expect(page).to_have_title("Testování - přihlášení")
         expect(login_page.password_input).to_have_attribute("type", "password")
 
-    @pytest.mark.regression
+    @pytest.mark.smoke
     def test_login_form_ui_elements_state(self, page: Page):
-        """TC06: Kontrola výchozího stavu UI prvků přihlašovacího formuláře."""
+        """TC-06-AUTH: Kontrola výchozího stavu UI prvků přihlašovacího formuláře."""
         login_page = LoginPage(page)
         login_page.open()
 
@@ -165,3 +169,126 @@ class TestLogin:
         expect(login_page.password_input).to_be_enabled()
         expect(login_page.login_button).to_have_text("Přihlásit")
         expect(login_page.login_button).to_be_enabled()
+
+    # =========================================================================
+    # 4. OCHRANA PROTI ÚTOKŮM HRUBOU SILOU (RATE LIMITING - US-07)
+    # =========================================================================
+
+    @pytest.mark.auth
+    @pytest.mark.smoke
+    def test_tc20_auth_temporary_lockout_after_five_failed_logins(self, page: Page):
+        """TC-20-AUTH: Dočasná blokace po 5 neúspěšných pokusech o přihlášení."""
+        # =====================================================================
+        # 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů)
+        # =====================================================================
+        register_page = RegisterPage(page)
+        login_page = LoginPage(page)
+        user = generate_random_user(name_prefix="RateLimit P1")
+
+        # Registrace a odhlášení nového uživatele
+        register_page.open()
+        register_page.register(user["name"], user["email"], user["password"])
+        logout_user(page)
+
+        login_page.open()
+        invalid_password = "ChybneHeslo999!"
+
+        # =====================================================================
+        # 2. ACT (5 neúspěšných pokusů za sebou)
+        # =====================================================================
+        for _ in range(5):
+            login_page.login(user["email"], invalid_password)
+            expect(login_page.email_error).to_be_visible()
+
+        # 6. pokus o přihlášení
+        login_page.login(user["email"], invalid_password)
+
+        # =====================================================================
+        # 3. ASSERT (3úrovňová validace: Routing + Session + Data State)
+        # =====================================================================
+        expect(page).to_have_url(login_page.URL)
+        expect(login_page.email_error).to_be_visible()
+        expect(login_page.email_error).to_contain_text(re.compile(r"Too many login attempts.*seconds", re.IGNORECASE))
+
+    @pytest.mark.auth
+    @pytest.mark.regression
+    def test_tc21_auth_reset_failed_login_counter_on_success(self, page: Page):
+        """TC-21-AUTH: Vynulování počítadla neúspěchů po úspěšném přihlášení."""
+        # =====================================================================
+        # 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů)
+        # =====================================================================
+        register_page = RegisterPage(page)
+        login_page = LoginPage(page)
+        courses_page = CoursesPage(page)
+        user = generate_random_user(name_prefix="RateReset P2")
+
+        # Registrace a odhlášení nového uživatele
+        register_page.open()
+        register_page.register(user["name"], user["email"], user["password"])
+        logout_user(page)
+
+        login_page.open()
+        invalid_password = "ChybneHeslo999!"
+
+        # =====================================================================
+        # 2. ACT (3 neúspěšné pokusy + úspěšné přihlášení + odhlášení + 3 neúspěchy)
+        # =====================================================================
+        for _ in range(3):
+            login_page.login(user["email"], invalid_password)
+            expect(login_page.email_error).to_be_visible()
+
+        # Úspěšné přihlášení vynuluje počítadlo neúspěchů
+        login_page.login(user["email"], user["password"])
+        expect(page).to_have_url(courses_page.URL, timeout=10000)
+        expect(courses_page.logout_button).to_be_visible()
+
+        # Odhlášení
+        courses_page.logout()
+        expect(courses_page.login_link).to_be_visible()
+
+        # Další 3 neúspěšné pokusy (celkem 6 pokusů přerušených úspěchem)
+        login_page.open()
+        for _ in range(3):
+            login_page.login(user["email"], invalid_password)
+            expect(login_page.email_error).to_be_visible()
+
+        # =====================================================================
+        # 3. ASSERT (Uživatel není zablokován po celkových 6 neúspěších)
+        # =====================================================================
+        expect(page).to_have_url(login_page.URL)
+        expect(login_page.email_error).to_be_visible()
+        expect(login_page.email_error).not_to_contain_text(re.compile(r"Too many login attempts", re.IGNORECASE))
+
+    @pytest.mark.auth
+    @pytest.mark.regression
+    def test_tc10_auth_keyboard_navigation_tab_and_enter(self, page: Page, test_user: dict):
+        """TC-10-AUTH: Navigace klávesnicí (Tab + Enter) ve formuláři."""
+        # =====================================================================
+        # 1. ARRANGE
+        # =====================================================================
+        login_page = LoginPage(page)
+        courses_page = CoursesPage(page)
+        login_page.open()
+
+        # =====================================================================
+        # 2. ACT
+        # =====================================================================
+        # 1. Zafokusovat e-mail a zadat text
+        login_page.email_input.focus()
+        page.keyboard.type(test_user["email"])
+
+        # 2. Stisknout Tab pro přechod na heslo
+        page.keyboard.press("Tab")
+        expect(login_page.password_input).to_be_focused()
+
+        # 3. Napsat heslo a odeslat klávesou Enter
+        page.keyboard.type(test_user["password"])
+        page.keyboard.press("Enter")
+
+        # =====================================================================
+        # 3. ASSERT
+        # =====================================================================
+        expect(page).to_have_url(courses_page.URL, timeout=10000)
+        expect(courses_page.logout_button).to_be_visible()
+
+

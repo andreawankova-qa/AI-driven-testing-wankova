@@ -53,9 +53,11 @@ class TestUserProfileAndDashboard:
         # US-17: Po uložení je uživatel přesměrován na domovskou stránku
         expect(page).to_have_url(home_page.URL, timeout=10000)
         expect(home_page.welcome_section).to_be_visible()
+        page.wait_for_load_state("networkidle")
 
         # Ověření perzistence uložených dat po návratu do profilu
         profile_page.open()
+        page.wait_for_load_state("networkidle")
         expect(profile_page.ico_input).to_have_value(valid_ico)
         expect(profile_page.phone_input).to_have_value(valid_phone)
 

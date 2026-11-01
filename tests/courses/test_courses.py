@@ -9,6 +9,7 @@ Pokrývá testovací případy:
 - TC-26-CRS: Zamezení registrace a indikace plně obsazeného běhu
 """
 
+import re
 import pytest
 from playwright.sync_api import Page, expect
 from pages.courses_page import CoursesPage
@@ -29,7 +30,7 @@ class TestCoursesCatalog:
         # Ověření zobrazení záhlaví a karet kurzů
         expect(courses_page.courses_header).to_be_visible()
         expect(courses_page.course_cards.first).to_be_visible()
-        assert courses_page.course_cards.count() > 0
+        expect(courses_page.course_cards).not_to_have_count(0)
 
         # Ověření přítomnosti výzvy k registraci pod katalogem pro nepřihlášeného
         expect(courses_page.navbar.login_link).to_be_visible()
@@ -51,9 +52,8 @@ class TestCoursesCatalog:
         expect(courses_page.get_card_capacity(first_card)).to_be_visible()
         expect(courses_page.get_card_image(first_card)).to_be_visible()
 
-        # Cena obsahuje měnu a je zaokrouhlena (např. Kč)
-        price_text = courses_page.get_card_price(first_card).inner_text()
-        assert "Kč" in price_text or "kč" in price_text.lower() or any(char.isdigit() for char in price_text)
+        # Cena obsahuje měnu a je zaokrouhlena (např. Kč) – web-first ověření
+        expect(courses_page.get_card_price(first_card)).to_contain_text(re.compile(r"Kč|\d+", re.IGNORECASE))
 
     @pytest.mark.smoke
     def test_tc24_crs_course_detail_and_iterations_display(self, page: Page):
@@ -74,9 +74,9 @@ class TestCoursesCatalog:
         course_detail = CourseDetailPage(page, course_id=1)
         course_detail.open()
 
-        # Ověření přítomnosti tlačítka zápisu u vypsaného běhu
-        expect(course_detail.enroll_buttons.first).to_be_visible()
-        expect(course_detail.enroll_buttons.first).to_have_text("Nezávazná registrace")
+        # Ověření přítomnosti tlačítka zápisu u vypsaného běhu (Locator Chaining na dostupný termín)
+        expect(course_detail.available_run_enroll_button).to_be_visible()
+        expect(course_detail.available_run_enroll_button).to_have_text("Nezávazná registrace")
 
     @pytest.mark.regression
     def test_tc26_crs_indication_when_capacity_full_or_unauthenticated(self, page: Page):

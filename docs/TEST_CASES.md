@@ -4,16 +4,17 @@ Tento dokument obsahuje ucelenou sadu testovacích případů navrženou na zák
 Testovací případy používají průběžné číslování ve formátu **`TC-01-MODUL`** až **`TC-47-MODUL`** a pokrývají 100 % všech 19 User Stories (US-01 až US-19) včetně pozitivních, negativních, validačních i bezpečnostních scénářů.
 
 > [!NOTE]
-> **Stav testovací sady k 19. 10. 2026:**
-> * **Celkový počet testovacích případů:** **47** (`TC-01` až `TC-47`)
+> **Stav testovací sady po auditu a sjednocení (1. 11. 2026):**
+> * **Celkový počet testovacích případů v katalogu:** **47** (`TC-01` až `TC-47`)
+> * **Pokrytí automatizovanými testy v kódu:** **47/47 (100.0 %)**
 > * **Pokrytí požadavků:** 19/19 User Stories (100 %)
 > * **Rozpad testů podle modulů:**
->   * Modul 1 (AUTH): 21 testů (`TC-01` až `TC-21`)
->   * Modul 2 (CRS): 5 testů (`TC-22` až `TC-26`)
->   * Modul 3 (ENR): 5 testů (`TC-27` až `TC-31`)
->   * Modul 4 (LEC): 7 testů (`TC-32` až `TC-38`)
->   * Modul 5 (PRF): 4 testy (`TC-39` až `TC-42`)
->   * Modul 6 (SEC): 5 testů (`TC-43` až `TC-47`)
+>   * Modul 1 (AUTH): 21 testů (`TC-01` až `TC-21`) – 100 % pokryto (2 evidované defekty xfail)
+>   * Modul 2 (CRS): 5 testů (`TC-22` až `TC-26`) – 100 % pokryto
+>   * Modul 3 (ENR): 5 testů (`TC-27` až `TC-31`) – 100 % pokryto
+>   * Modul 4 (LEC): 7 testů (`TC-32` až `TC-38`) – 100 % pokryto (4 evidované defekty xfail)
+>   * Modul 5 (PRF): 4 testy (`TC-39` až `TC-42`) – 100 % pokryto
+>   * Modul 6 (SEC): 5 testů (`TC-43` až `TC-47`) – 100 % pokryto (1 evidovaný defekt xfail)
 
 ---
 

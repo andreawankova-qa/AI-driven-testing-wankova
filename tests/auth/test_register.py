@@ -24,8 +24,8 @@ class TestRegistration:
     """Testovací sada pro ověření registrace uživatelů a validace polí."""
 
     @pytest.mark.smoke
-    def test_successful_registration_and_password_masking(self, page: Page):
-        """TC01: Úspěšná registrace nového uživatele a kontrola maskování hesel."""
+    def test_tc01_auth_successful_registration_and_password_masking(self, page: Page):
+        """TC-01-AUTH: Úspěšná registrace nového uživatele a kontrola maskování hesel."""
         register_page = RegisterPage(page)
         home_page = HomePage(page)
         new_user = generate_random_user()
@@ -53,8 +53,8 @@ class TestRegistration:
         expect(home_page.navbar.logout_button).to_be_visible()
 
     @pytest.mark.regression
-    def test_registration_required_fields_validation(self, page: Page):
-        """TC02: Validace povinných polí při odeslání prázdného formuláře."""
+    def test_tc04_auth_registration_required_fields_validation(self, page: Page):
+        """TC-04-AUTH: Validace povinných polí při odeslání prázdného formuláře."""
         register_page = RegisterPage(page)
         register_page.open()
         register_page.click_register()
@@ -78,10 +78,10 @@ class TestRegistration:
         ],
         ids=["different-password", "empty-password-again"]
     )
-    def test_registration_password_mismatch_and_empty_confirmation(
+    def test_tc03_auth_registration_password_mismatch_and_empty_confirmation(
         self, page: Page, password_again_value: str, scenario_id: str
     ):
-        """TC03: Negativní test registrace – neshoda hesel a prázdné potvrzení."""
+        """TC-03-AUTH: Negativní test registrace – neshoda hesel a prázdné potvrzení."""
         register_page = RegisterPage(page)
         test_email = generate_random_email(prefix=f"mismatch_{scenario_id}")
 
@@ -98,8 +98,8 @@ class TestRegistration:
         expect(register_page.password_error).to_have_text("The password field confirmation does not match.")
 
     @pytest.mark.regression
-    def test_registration_short_password(self, page: Page):
-        """TC04: Negativní test registrace – heslo kratší než 8 znaků."""
+    def test_tc04_auth_registration_short_password(self, page: Page):
+        """TC-04-AUTH: Negativní test registrace – heslo kratší než 8 znaků."""
         register_page = RegisterPage(page)
         test_email = generate_random_email(prefix="short")
 
@@ -116,8 +116,8 @@ class TestRegistration:
         expect(register_page.password_error).to_have_text("The password field must be at least 8 characters.")
 
     @pytest.mark.regression
-    def test_registration_duplicate_email(self, page: Page, lecturer_user: dict):
-        """TC05: Negativní test registrace – pokus o registraci s již obsazeným e-mailem."""
+    def test_tc02_auth_registration_duplicate_email(self, page: Page, lecturer_user: dict):
+        """TC-02-AUTH: Negativní test registrace – pokus o registraci s již obsazeným e-mailem."""
         register_page = RegisterPage(page)
         register_page.open()
 
@@ -133,8 +133,8 @@ class TestRegistration:
         expect(register_page.email_error).to_have_text("The email has already been taken.")
 
     @pytest.mark.smoke
-    def test_registration_and_subsequent_login_with_enter_key(self, page: Page):
-        """TC06: Registrace nového uživatele, odhlášení a následné přihlášení klávesou Enter."""
+    def test_tc01_auth_registration_and_subsequent_login_with_enter_key(self, page: Page):
+        """TC-01-AUTH: Registrace nového uživatele, odhlášení a následné přihlášení klávesou Enter."""
         register_page = RegisterPage(page)
         home_page = HomePage(page)
         login_page = LoginPage(page)
@@ -159,3 +159,45 @@ class TestRegistration:
         # 4. Ověření
         expect(page).to_have_url(courses_page.URL, timeout=10000)
         expect(courses_page.logout_button).to_be_visible()
+
+    @pytest.mark.regression
+    def test_tc05_auth_email_normalization_on_registration(self, page: Page):
+        """TC-05-AUTH: Normalizace e-mailu (ořezání mezer, case-insensitive)."""
+        # =====================================================================
+        # 1. ARRANGE
+        # =====================================================================
+        register_page = RegisterPage(page)
+        home_page = HomePage(page)
+        login_page = LoginPage(page)
+        courses_page = CoursesPage(page)
+
+        base_user = generate_random_user(name_prefix="Normalizace User")
+        clean_email = base_user["email"].lower()
+        padded_email = f"  {clean_email.upper()}  "
+
+        # =====================================================================
+        # 2. ACT
+        # =====================================================================
+        # 1. Registrace s mezerami a velkými písmeny
+        register_page.open()
+        register_page.register(
+            name=base_user["name"],
+            email=padded_email,
+            password=base_user["password"],
+            password_again=base_user["password"]
+        )
+        expect(page).to_have_url(home_page.URL, timeout=10000)
+
+        # 2. Odhlášení
+        logout_user(page)
+
+        # 3. Přihlášení s čistým malým e-mailem bez mezer
+        login_page.open()
+        login_page.login(clean_email, base_user["password"])
+
+        # =====================================================================
+        # 3. ASSERT
+        # =====================================================================
+        expect(page).to_have_url(courses_page.URL, timeout=10000)
+        expect(courses_page.logout_button).to_be_visible()
+

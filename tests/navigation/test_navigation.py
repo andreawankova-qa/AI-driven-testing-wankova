@@ -20,8 +20,8 @@ class TestNavigation:
     """Testovací sada pro navigaci, přechody mezi formuláři a chráněnými trasami."""
 
     @pytest.mark.smoke
-    def test_login_from_courses_navigation(self, page: Page, test_user: dict):
-        """TC01: Integrační test – přechod z přehledu kurzů na přihlášení a návrat zpět."""
+    def test_tc01_nav_login_from_courses_navigation(self, page: Page, test_user: dict):
+        """TC-01-NAV: Integrační test – přechod z přehledu kurzů na přihlášení a návrat zpět."""
         courses_page = CoursesPage(page)
         login_page = LoginPage(page)
 
@@ -44,8 +44,8 @@ class TestNavigation:
         ],
         ids=["to-forgot-password", "to-register"]
     )
-    def test_login_form_footer_links(self, page: Page, link_attr: str, expected_page_class):
-        """TC02: Funkčnost doplňkových odkazů ve spodní části přihlašovacího formuláře (/login -> /forgot-password, /register)."""
+    def test_tc02_nav_login_form_footer_links(self, page: Page, link_attr: str, expected_page_class):
+        """TC-02-NAV: Funkčnost doplňkových odkazů ve spodní části přihlašovacího formuláře (/login -> /forgot-password, /register)."""
         login_page = LoginPage(page)
         target_page = expected_page_class(page)
 
@@ -57,8 +57,8 @@ class TestNavigation:
         expect(page).to_have_url(target_page.URL)
 
     @pytest.mark.smoke
-    def test_register_page_login_link_returns_to_login(self, page: Page):
-        """TC03: Návratový odkaz 'Přihlásit se' z registrační stránky zpět na přihlášení (/register -> /login)."""
+    def test_tc03_nav_register_page_login_link_returns_to_login(self, page: Page):
+        """TC-03-NAV: Návratový odkaz 'Přihlásit se' z registrační stránky zpět na přihlášení (/register -> /login)."""
         register_page = RegisterPage(page)
         login_page = LoginPage(page)
 
