@@ -12,6 +12,7 @@ Každá zaznamenaná chyba má přiděleno unikátní identifikační číslo (`
 | [**BR-01**](#br-01-rbac-chybějící-ochrana-url-coursescreate--formulář-pro-vytvoření-kurzu-je-přístupný-pro-roli-zákazník) | `SEC / RBAC` | Chybějící ochrana URL `/courses/create` pro roli Zákazník | **Critical** | **High** | US-18, US-13 | 🔴 Otevřeno |
 | [**BR-02**](#br-02-lec-chybějící-klientská-validace-formuláře-kurzu-a-přesměrování-při-chybě-api-http-422) | `LEC` | Chybějící klientská validace formuláře kurzu a přesměrování při chybě API (HTTP 422) | **Medium** | **Medium** | US-13 | 🔴 Otevřeno |
 | [**BR-03**](#br-03-auth-chybějící-klientské-rozhraní-pro-dokončení-obnovy-hesla-na-reset-password) | `AUTH` | Chybějící klientské rozhraní pro dokončení obnovy hesla na `/reset-password` | **High** | **High** | US-05 | 🔴 Otevřeno |
+| [**BR-04**](#br-04-enr-chybná-validace-nepovinného-ičo--prázdné-pole-způsobuje-chybu-neplatné-ičo-a-blokuje-zápis) | `ENR` | Chybná validace nepovinného IČO – prázdné pole blokuje registraci s chybou „Neplatné IČO“ | **Medium** | **High** | US-11 | 🔴 Otevřeno |
 
 > [!NOTE]
 > **Životní cyklus stavů incidentu:** `🔴 Otevřeno (Open)` ➔ `🟡 V řešení (In Progress)` ➔ `🟢 Vyřešeno (Closed / Verified)`  
@@ -293,4 +294,79 @@ E   - waiting for get_by_test_id("password_input")
 #### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
 1. Do Vue routeru implementovat komponentu formuláře nového hesla pro trasu `/reset-password`.
 2. Propojit formulář s backendovým koncovým bodem pro uložení nového hesla.
+
+---
+
+### 🐞 BR-04 [ENR]: Chybná validace nepovinného IČO – prázdné pole způsobuje chybu „Neplatné IČO“ a blokuje zápis
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login & Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[Enrollment/Validation] Formulář nezávazné registrace kurzu nepovoluje odeslání bez IČO a hlásí „Neplatné IČO“`
+* **Komponenta:** Frontend / Zápis na kurz / Validace formuláře
+* **Závažnost (Severity):** Medium (Uživatel bez IČO – nepodnikající fyzická osoba – se nemůže přihlásit na kurz)
+* **Priorita (Priority):** High (Blokuje zápis běžných studentů / soukromých zájemců bez živnostenského oprávnění)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:** 
+  - [`US-11: Nezávazná registrace na běh kurzu`](požadavky_ust_podle_src.md#us-11-nezávazná-registrace-na-běh-kurzu-s-validací-ičo-a-telefonu) (AK-1, AK-3)
+* **Související Test Casy:** 
+  - `TC-28-ENR` (v [`tests/enrollment/test_enrollment.py`](../tests/enrollment/test_enrollment.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 9. 11. 2026
+
+---
+
+#### 📝 Popis problému (Description)
+Dle akceptačního kritéria AK-3 v US-11 má být IČO nepovinným údajem: validace algoritmem kontrolního součtu modulo 11 má proběhnout **pouze tehdy, pokud uživatel IČO zadá**.
+V aplikaci však validační logika na klientské straně vyhodnocuje i prázdný řetězec v poli IČO jako neplatné IČO, zobrazí hlášku `Neplatné IČO` a zablokuje odeslání nezávazné registrace. Zákazník bez IČO tak nemůže dokončit zápis.
+
+---
+
+#### ⚙️ Předpoklady (Preconditions)
+1. Přihlášený uživatel v roli **Zákazník** (`tester@kitner.cz` / `TajneHeslo123`).
+2. Uživatel se nachází na objednávkovém formuláři volného běhu kurzu (např. `/courses/76/register`).
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Přejdi na formulář zápisu na kurz: `http://testovani.kitner.cz/courses/76/register`.
+2. Do pole **Telefon** zadej platné telefonní číslo: `+420 777 123 456`.
+3. Pole **IČO** ponech zcela prázdné.
+4. Klikni na tlačítko **„Nezávazná registrace“** (`data-testid="registration_link"`).
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Protože IČO je nepovinné, formulář projde validací.
+* Objednávka je úspěšně odeslána a vytvořen zápis studenta.
+* Zákazník je přesměrován do sekce `http://testovani.kitner.cz/my-courses`.
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Formulář se neodešle a zůstává na adrese `/courses/76/register`.
+* U pole IČO se zobrazí červená chybová hláška **„Neplatné IČO“**.
+
+---
+
+#### 💻 Technický důkaz (Failure Log)
+```text
+> expect(page).to_have_url(my_courses_page.URL)
+E AssertionError: Page URL expected to be 'http://testovani.kitner.cz/my-courses'
+E Actual value: http://testovani.kitner.cz/courses/76/register
+E Call log:
+E   - Expect "to_have_url" with timeout 5000ms
+E     14 × unexpected value "http://testovani.kitner.cz/courses/76/register"
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+V klientské validační funkci upravit podmínku tak, aby se validace kontrolního součtu modulo 11 spouštěla pouze v případě neprázdné hodnoty:
+```javascript
+if (ico && ico.trim() !== "") {
+    // spustit validaci modulo 11
+}
+```
 

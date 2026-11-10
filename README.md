@@ -2,16 +2,16 @@
 
 Komplexní a plně standardizovaná sada automatizovaných E2E testů pro vzdělávací portál **[testovani.kitner.cz](http://testovani.kitner.cz)** postavená na moderní Python architektuře s využitím **Playwright** a **Pytest**, návrhového vzoru **Page Object Model (POM)** s komponentami a hybridního řízení testů přes **domény a Pytest markery**.
 
-Testovací sada pokrývá **100 % všech specifikovaných požadavků** (19/19 User Stories) a implementuje všech **47 testovacích případů** (`TC-01-AUTH` až `TC-47-SEC`) v souladu s projektovými standardy v [`AGENTS.md`](AGENTS.md).
+Testovací sada pokrývá **100 % všech specifikovaných požadavků** (19/19 User Stories) a implementuje všech **48 testovacích případů** (`TC-01-AUTH` až `TC-48-ENR`) v souladu s projektovými standardy v [`AGENTS.md`](AGENTS.md).
 
 ---
 
 ## 📊 Stav testovací sady a metriky kvality
 
 * **Pokrytí byznysových požadavků:** 19 / 19 User Stories (100.0 %)
-* **Katalog testovacích případů:** 47 / 47 Test Cases v kódu (100.0 %)
-* **Výsledek celkové regrese:** **`59 passed, 7 xfailed`** (100% stabilní, 0 neočekávaných selhání)
-* **Evidované defekty aplikace:** 7 legitimních defektů se statusem `xfail` zdokumentovaných v [`docs/JIRA_BUG_REPORTS.md`](docs/JIRA_BUG_REPORTS.md)
+* **Katalog testovacích případů:** 48 / 48 Test Cases v kódu (100.0 %)
+* **Výsledek celkové regrese:** **`62 passed, 9 xfailed`** (100% stabilní, 0 neočekávaných selhání)
+* **Evidované defekty aplikace:** 9 legitimních defektů se statusem `xfail` zdokumentovaných v [`docs/JIRA_BUG_REPORTS.md`](docs/JIRA_BUG_REPORTS.md)
 * **Kvalita lokátorů (`scan_locators.py`):** **0 nalezených neshod** (100% `get_by_test_id` a Locator Chaining bez křehkých indexů)
 * **Kvalita kontrol (`scan_assertions.py`):** **0 nalezených neshod** (100% Web-First Assertions `expect(...)` s auto-waitingem)
 * **Soulad markerů a trasovatelnost (`scan_traceability.py`):** **0 neshod**, plně generovaná matice trasovatelnosti
@@ -23,11 +23,15 @@ Testovací sada pokrývá **100 % všech specifikovaných požadavků** (19/19 U
 Projekt striktně dodržuje hierarchii 9 architektonických vrstev (*Test Project Structure*):
 
 ```text
-├── .agents/skills/             # QA SKILLS: 5 specializovaných nástrojů a auditních skriptů
+├── .agents/skills/             # QA SKILLS: Specializované dovednosti a automatizační workflow
 │   ├── assertions/             # Skill pro audit a vynucení Web-First asercí (scan_assertions.py)
 │   ├── bug_reporting/          # Šablona a standard JIRA hlášení defektů
 │   ├── locators/               # Pravidla lokátorů a statický AST skener (scan_locators.py)
-│   ├── test_authoring/         # 4kvadrantová analýza a POM scaffolding nových testů
+│   ├── qa-auditor/             # Nezávislý audit kvality a Quality Gate Report (Maker vs. Checker)
+│   ├── story-to-testcases/     # Fáze 1: Návrh test casů z User Story (verify_tc.py)
+│   ├── story_coverage/         # Interaktivní HTML dashboard pokrytí User Stories
+│   ├── test_overview/          # Technický přehled kroků a kontrol testů (docs/TEST_STEPS_OVERVIEW.md)
+│   ├── testcase-to-automation/ # Fáze 2: Automatizace schválených TC do kódu Playwright (verify_at.py)
 │   └── traceability/           # Matice trasovatelnosti a kontrola markerů (scan_traceability.py)
 │
 ├── .github/workflows/
@@ -50,7 +54,7 @@ Projekt striktně dodržuje hierarchii 9 architektonických vrstev (*Test Projec
 │   ├── courses/                # Modul: Veřejný katalog kurzů a detail
 │   │   └── test_courses.py     # TC-22, TC-23, TC-24, TC-25, TC-26
 │   ├── enrollment/             # Modul: Zápis na kurzy a Moje kurzy
-│   │   └── test_enrollment.py  # TC-27, TC-28, TC-29, TC-30, TC-31
+│   │   └── test_enrollment.py  # TC-27, TC-28, TC-29, TC-30, TC-31, TC-48
 │   ├── lecturer/               # Modul: Správa kurzů a termínů lektorem
 │   │   └── test_lecturer.py    # TC-32, TC-33, TC-34, TC-35, TC-36, TC-37, TC-38
 │   ├── navigation/             # Modul: Cross-cutting navigační toky a prolinkování

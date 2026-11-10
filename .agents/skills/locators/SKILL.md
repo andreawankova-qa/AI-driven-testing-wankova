@@ -1,11 +1,13 @@
 ---
 name: locators
 description: >-
-  Použij tento skill, kdykoliv uživatel pracuje s lokátory nebo selektory, vytváří nové Page Objects,
-  provádí kontrolu, audit nebo refaktoring lokátorů v Playwrightu. Vynucuje 6stupňovou sestupnou prioritu
-  (get_by_test_id, přístupnost role/label, stabilní ID/name, viditelný text, funkční CSS atributy, relativní kontext),
-  Locator Chaining, zákaz indexů (.first/.last/.nth) a zákaz přímých lokátorů v testech. Zajišťuje automatický audit
-  přes scan_locators.py s edukativním náhledem diffu a potvrzením od uživatele.
+  POVINNĚ aktivuj tento skill VŽDY, když agent samostatně vytváří, píše, kontroluje, upravuje
+  nebo refaktoruje Page Objecty, komponenty (pages/), automatizované testy (tests/) či lokátory a selektory,
+  a to i v případě, že uživatel tato klíčová slova v promptu výslovně neuvede (např. při přidávání UI prvků,
+  formulářů, tlačítek, úpravě stránek nebo při implementaci uživatelských kroků v aplikaci). Vynucuje 6stupňovou
+  sestupnou prioritu (priorita #1 get_by_test_id, přístupnost role/label, stabilní ID/name, viditelný text,
+  funkční CSS atributy, relativní kontext), Locator Chaining, zákaz indexů (.first/.last/.nth) a striktní
+  zákaz přímých selektorů v testech (POM-First). Zahrnuje auditní skener scan_locators.py.
 ---
 
 # 🎯 Locators – Standardy a audit lokátorů (Playwright & POM)

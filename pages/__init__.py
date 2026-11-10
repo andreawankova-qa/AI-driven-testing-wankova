@@ -9,8 +9,10 @@ from pages.enrollment_page import EnrollmentPage
 from pages.my_courses_page import MyCoursesPage
 from pages.profile_page import ProfilePage
 from pages.create_course_page import CreateCoursePage
+from pages.create_iteration_page import CreateIterationPage
 from pages.reset_password_page import ResetPasswordPage
 from pages.email_verification_page import EmailVerificationPage
+from pages.participants_page import ParticipantsPage
 
 __all__ = [
     "BasePage",
@@ -24,7 +26,9 @@ __all__ = [
     "MyCoursesPage",
     "ProfilePage",
     "CreateCoursePage",
+    "CreateIterationPage",
     "ResetPasswordPage",
-    "EmailVerificationPage"
+    "EmailVerificationPage",
+    "ParticipantsPage"
 ]
 

@@ -116,6 +116,28 @@ class TestRegistration:
         expect(register_page.password_error).to_have_text("The password field must be at least 8 characters.")
 
     @pytest.mark.regression
+    def test_tc04_auth_registration_invalid_email_format(self, page: Page):
+        """TC-04-AUTH: Negativní test registrace – neplatný formát e-mailové adresy."""
+        register_page = RegisterPage(page)
+        register_page.open()
+
+        # Pokus o odeslání registrace s e-mailem bez zavináče a domény
+        register_page.register(
+            name="Neplatny Email",
+            email="neplatny_email_bez_zavinace",
+            password="PlatneHeslo123",
+            password_again="PlatneHeslo123"
+        )
+
+        # Formulář se neodešle (zůstává na URL registrace)
+        expect(page).to_have_url(register_page.URL)
+        expect(register_page.register_button).to_be_visible()
+        # Ověření klientské HTML5 validace pole typu email
+        expect(register_page.email_input).to_have_attribute("type", "email")
+        is_valid = register_page.email_input.evaluate("el => el.checkValidity()")
+        assert is_valid is False
+
+    @pytest.mark.regression
     def test_tc02_auth_registration_duplicate_email(self, page: Page, lecturer_user: dict):
         """TC-02-AUTH: Negativní test registrace – pokus o registraci s již obsazeným e-mailem."""
         register_page = RegisterPage(page)

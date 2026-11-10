@@ -1,11 +1,13 @@
 ---
 name: traceability
 description: >-
-  Použij tento skill, kdykoliv uživatel ověřuje pokrytí požadavků (Traceability Matrix), kontroluje soulad
-  testů s TEST_CASES.md a User Stories, hledá nepokryté scénáře, vytváří nové testy podle specifikace nebo
-  sjednocuje číslování a markery testů. Vynucuje 5 zlatých pravidel trasovatelnosti, kontrolu shody doménových
-  a prioritních markerů (@pytest.mark.smoke/regression), formát docstringů TC-xx-MODUL a obsahuje skript
-  scan_traceability.py pro audit, export matice a scaffolding testů.
+  POVINNĚ aktivuj tento skill VŽDY, když agent samostatně vytváří, píše, kontroluje, upravuje
+  nebo čísluje automatizované testy v tests/, Page Objecty či specifikace, a to i v případě, že uživatel
+  tato klíčová slova v promptu výslovně neuvede (např. při přidávání nových testovacích funkcí, úpravě markerů,
+  auditu provázanosti kódu na požadavky nebo reorganizaci testů). Zajišťuje obousměrnou trasovatelnost mezi požadavky
+  (docs/požadavky_ust_podle_src.md), katalogem testů (docs/TEST_CASES.md) a kódem testů. Vynucuje 5 zlatých pravidel
+  trasovatelnosti, formát docstringů a názvů TC-xx-MODUL, správné doménové i prioritní markery (@pytest.mark.smoke/regression)
+  a obsahuje auditní skener scan_traceability.py.
 ---
 
 # 🧭 Traceability – Matice pokrytí a obousměrná trasovatelnost (Playwright & Pytest)

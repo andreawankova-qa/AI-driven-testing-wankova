@@ -13,9 +13,8 @@ import pytest
 from playwright.sync_api import Page, expect
 from pages.login_page import LoginPage
 from pages.courses_page import CoursesPage
-from pages.register_page import RegisterPage
 from utils.data_generator import load_json_data, generate_random_user
-from helpers.auth_helpers import logout_user
+from helpers.auth_helpers import logout_user, register_and_login_user
 from config.settings import settings
 
 
@@ -34,8 +33,9 @@ class TestLogin:
             (lambda e: e, "click", "standard_button_click"),
             (lambda e: e, "enter_key", "submit_with_enter_key"),
             (lambda e: e.upper(), "click", "uppercase_email_case_insensitivity"),
+            (lambda e: f"  {e}  ", "click", "padded_email_whitespace_trimming"),
         ],
-        ids=["standard-click", "enter-key", "uppercase-email"]
+        ids=["standard-click", "enter-key", "uppercase-email", "padded-whitespace"]
     )
     def test_tc06_auth_successful_login_variants(
         self, page: Page, test_user: dict, email_transformer, submit_method: str, test_id: str
@@ -150,7 +150,7 @@ class TestLogin:
     # =========================================================================
 
     @pytest.mark.smoke
-    def test_login_page_title_and_password_masking(self, page: Page):
+    def test_tc06_auth_title_and_password_masking(self, page: Page):
         """TC-06-AUTH: Kontrola metadat stránky (<title>) a bezpečnostního maskování hesla."""
         login_page = LoginPage(page)
         login_page.open()
@@ -159,7 +159,7 @@ class TestLogin:
         expect(login_page.password_input).to_have_attribute("type", "password")
 
     @pytest.mark.smoke
-    def test_login_form_ui_elements_state(self, page: Page):
+    def test_tc06_auth_form_ui_elements_state(self, page: Page):
         """TC-06-AUTH: Kontrola výchozího stavu UI prvků přihlašovacího formuláře."""
         login_page = LoginPage(page)
         login_page.open()
@@ -174,20 +174,17 @@ class TestLogin:
     # 4. OCHRANA PROTI ÚTOKŮM HRUBOU SILOU (RATE LIMITING - US-07)
     # =========================================================================
 
-    @pytest.mark.auth
     @pytest.mark.smoke
     def test_tc20_auth_temporary_lockout_after_five_failed_logins(self, page: Page):
         """TC-20-AUTH: Dočasná blokace po 5 neúspěšných pokusech o přihlášení."""
         # =====================================================================
         # 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů)
         # =====================================================================
-        register_page = RegisterPage(page)
         login_page = LoginPage(page)
         user = generate_random_user(name_prefix="RateLimit P1")
 
         # Registrace a odhlášení nového uživatele
-        register_page.open()
-        register_page.register(user["name"], user["email"], user["password"])
+        register_and_login_user(page, user)
         logout_user(page)
 
         login_page.open()
@@ -197,11 +194,13 @@ class TestLogin:
         # 2. ACT (5 neúspěšných pokusů za sebou)
         # =====================================================================
         for _ in range(5):
-            login_page.login(user["email"], invalid_password)
+            with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"):
+                login_page.login(user["email"], invalid_password)
             expect(login_page.email_error).to_be_visible()
 
         # 6. pokus o přihlášení
-        login_page.login(user["email"], invalid_password)
+        with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"):
+            login_page.login(user["email"], invalid_password)
 
         # =====================================================================
         # 3. ASSERT (3úrovňová validace: Routing + Session + Data State)
@@ -210,21 +209,18 @@ class TestLogin:
         expect(login_page.email_error).to_be_visible()
         expect(login_page.email_error).to_contain_text(re.compile(r"Too many login attempts.*seconds", re.IGNORECASE))
 
-    @pytest.mark.auth
     @pytest.mark.regression
     def test_tc21_auth_reset_failed_login_counter_on_success(self, page: Page):
         """TC-21-AUTH: Vynulování počítadla neúspěchů po úspěšném přihlášení."""
         # =====================================================================
         # 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů)
         # =====================================================================
-        register_page = RegisterPage(page)
         login_page = LoginPage(page)
         courses_page = CoursesPage(page)
         user = generate_random_user(name_prefix="RateReset P2")
 
         # Registrace a odhlášení nového uživatele
-        register_page.open()
-        register_page.register(user["name"], user["email"], user["password"])
+        register_and_login_user(page, user)
         logout_user(page)
 
         login_page.open()
@@ -234,7 +230,8 @@ class TestLogin:
         # 2. ACT (3 neúspěšné pokusy + úspěšné přihlášení + odhlášení + 3 neúspěchy)
         # =====================================================================
         for _ in range(3):
-            login_page.login(user["email"], invalid_password)
+            with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"):
+                login_page.login(user["email"], invalid_password)
             expect(login_page.email_error).to_be_visible()
 
         # Úspěšné přihlášení vynuluje počítadlo neúspěchů
@@ -249,7 +246,8 @@ class TestLogin:
         # Další 3 neúspěšné pokusy (celkem 6 pokusů přerušených úspěchem)
         login_page.open()
         for _ in range(3):
-            login_page.login(user["email"], invalid_password)
+            with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"):
+                login_page.login(user["email"], invalid_password)
             expect(login_page.email_error).to_be_visible()
 
         # =====================================================================
@@ -259,7 +257,6 @@ class TestLogin:
         expect(login_page.email_error).to_be_visible()
         expect(login_page.email_error).not_to_contain_text(re.compile(r"Too many login attempts", re.IGNORECASE))
 
-    @pytest.mark.auth
     @pytest.mark.regression
     def test_tc10_auth_keyboard_navigation_tab_and_enter(self, page: Page, test_user: dict):
         """TC-10-AUTH: Navigace klávesnicí (Tab + Enter) ve formuláři."""

@@ -1,12 +1,13 @@
 ---
 name: bug_reporting
 description: >-
-  Použij tento skill, kdykoliv uživatel chce nahlásit chybu, vytvořit JIRA bug report,
-  zaznamenat incident z testů nebo když selže automatizovaný test (Playwright / Pytest)
-  a je potřeba zdokumentovat defekt podle standardů projektu do docs/JIRA_BUG_REPORTS.md.
-  Vynucuje autonomní pokus o reprodukci (žádný ticket bez ověřené chyby), kompletní JIRA šablonu,
-  objektivní určení Severity vs. Priority (ISTQB / OWASP), provázání s User Stories (US-xx)
-  a Test Casy (TC-xx) a bezpečný zápis s lidským schválením.
+  POVINNĚ aktivuj tento skill VŽDY, když agent při vytváření, psaní, spouštění, kontrole nebo úpravě
+  automatizovaných testů (tests/), Page Objectů či assertů narazí na selhání testu, chybové chování aplikace,
+  regresi nebo defekt, a to i v případě, že uživatel slova jako 'bug', 'chyba' či 'JIRA' v promptu výslovně
+  neuvede (např. při 'proč test selhal?', 'oprav padající scénář', 'prověř chování stránky'). Vynucuje
+  autonomní pokus o reprodukci, striktní zákaz zakládání JIRA ticketů pro chyby v testu (test bug),
+  kompletní šablonu hlášení do docs/JIRA_BUG_REPORTS.md, objektivní ISTQB Severity/Priority a provázání
+  s User Stories (US-xx) a Test Casy (TC-xx) s lidským schválením.
 ---
 
 # 🐞 Bug Reporting – Standardy hlášení chyb a správa incidentů (JIRA)

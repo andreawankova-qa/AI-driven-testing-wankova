@@ -86,12 +86,9 @@ class TestPasswordReset:
         # Otevření stránky resetu s neplatným tokenem
         reset_page.open(token="neplatny_nebo_expirovany_token_404", email="tester@kitner.cz")
 
-        # Systém musí indikovat neplatnost odkazu nebo zamezit formuláři
-        if reset_page.submit_button.is_visible():
-            reset_page.reset_password(password="NoveHeslo123!", password_again="NoveHeslo123!")
-            expect(reset_page.error_message).to_be_visible()
-        else:
-            expect(reset_page.password_input).not_to_be_visible()
+        # Systém musí zamezit přístupu k formuláři změny hesla
+        expect(reset_page.form).not_to_be_visible()
+        expect(reset_page.password_input).not_to_be_visible()
 
     @pytest.mark.regression
     @pytest.mark.xfail(
@@ -107,6 +104,22 @@ class TestPasswordReset:
         expect(reset_page.password_again_input).to_be_visible()
 
         reset_page.reset_password(password="PrvniHeslo123!", password_again="DruheOdlišneHeslo456!")
+        expect(reset_page.password_error).to_be_visible()
+
+    @pytest.mark.regression
+    @pytest.mark.xfail(
+        reason="BR-03: Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password",
+        strict=True
+    )
+    def test_tc16_auth_password_reset_short_password(self, page: Page):
+        """TC-16-AUTH: Změna hesla s heslem nesplňujícím minimální délku 8 znaků."""
+        reset_page = ResetPasswordPage(page)
+        reset_page.open(token="valid_sample_token_xyz123", email="tester@kitner.cz")
+
+        expect(reset_page.password_input).to_be_visible()
+        expect(reset_page.password_again_input).to_be_visible()
+
+        reset_page.reset_password(password="12345", password_again="12345")
         expect(reset_page.password_error).to_be_visible()
 
     # =========================================================================

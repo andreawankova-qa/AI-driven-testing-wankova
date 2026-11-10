@@ -1,11 +1,13 @@
 ---
 name: assertions
 description: >-
-  Použij tento skill, kdykoliv uživatel pracuje s asserty/validacemi, vytváří nové testy,
-  provádí kontrolu, audit nebo refaktoring kontrol v Playwrightu a Pytestu. Vynucuje
-  3úrovňové ověřování stavu (Routing, Session, Data State / UI Feedback), zákaz Python assert
-  pro UI prvky ve prospěch Playwright web-first assertions (expect), zákaz time.sleep(),
-  zákaz assertů v Page Objects, prevenci falešné pozitivity u negativních asercí a bezpečné
+  POVINNĚ aktivuj tento skill VŽDY, když agent samostatně vytváří, píše, kontroluje, upravuje
+  nebo refaktoruje jakékoliv automatizované testy, scénáře, Page Objecty, asserty či validace,
+  a to i v případě, že uživatel tato klíčová slova v promptu výslovně neuvede (např. při obecném zadání
+  'přidej test', 'oprav kód', 'ověř funkčnost', 'implementuj scénář' nebo jakékoliv práci se soubory v tests/).
+  Vynucuje 3úrovňové ověřování stavu (Routing, Session, Data State / UI Feedback), striktní zákaz Python
+  assert pro UI prvky ve prospěch Playwright web-first assertions (expect), zákaz time.sleep(), zákaz assertů
+  v Page Objects (pages/), prevenci falešné pozitivity u negativních asercí (not_to_be_visible) a bezpečné
   ověřování chybových hlášek. Zahrnuje AST skener scan_assertions.py pro statickou analýzu s možností --fix.
 ---
 

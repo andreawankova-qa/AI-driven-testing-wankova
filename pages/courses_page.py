@@ -20,6 +20,7 @@ class CoursesPage(BasePage):
         self.course_name_input: Locator = page.get_by_test_id("course_name_input")
         # Karty kurzů a jejich atributy (nativní get_by_test_id s regulárním výrazem)
         self.course_cards: Locator = page.get_by_test_id(re.compile(r"^course_"))
+        self.primary_course_card: Locator = page.get_by_test_id("course_1")
         self.course_names: Locator = page.get_by_test_id("course_name")
         self.course_descriptions: Locator = page.get_by_test_id("course_description")
         self.course_prices: Locator = page.get_by_test_id("course_price")
@@ -58,6 +59,16 @@ class CoursesPage(BasePage):
     def is_logged_in(self) -> bool:
         """Ověří, zda je uživatel přihlášen podle přítomnosti tlačítka Odhlásit se."""
         return self.navbar.is_logged_in()
+
+    def get_course_card(self, course_id: int = 1) -> Locator:
+        """Vrátí lokátor konkrétní karty kurzu podle ID (bez použití indexu)."""
+        return self.page.get_by_test_id(f"course_{course_id}")
+
+    def click_course_detail(self, card: Locator = None):
+        """Rozklikne detail kurzu kliknutím na tlačítko 'Chci vidět více'."""
+        target_card = card or self.primary_course_card
+        target_card.get_by_role("button", name="Chci vidět více").click()
+        return self
 
     def logout(self):
         """Klikne na tlačítko Odhlásit se v navigaci."""
