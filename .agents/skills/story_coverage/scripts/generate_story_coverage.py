@@ -13,7 +13,7 @@ Zdroje dat:
 
 Použití:
   python3 generate_story_coverage.py
-  python3 generate_story_coverage.py --output reports/story_coverage.html
+  python3 generate_story_coverage.py --output docs/story_coverage.html
 """
 
 import os
@@ -969,8 +969,8 @@ def main():
     parser.add_argument(
         "--output", "-o",
         type=str,
-        default="reports/story_coverage.html",
-        help="Výstupní cesta pro HTML report (výchozí: reports/story_coverage.html)",
+        default="docs/story_coverage.html",
+        help="Výstupní cesta pro HTML report (výchozí: docs/story_coverage.html)",
     )
     parser.add_argument(
         "--quiet", "-q",

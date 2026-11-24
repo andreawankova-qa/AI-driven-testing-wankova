@@ -41,7 +41,10 @@ class TestSecurityAndAuthorization:
         expect(my_courses_page.navbar.login_link).to_be_visible()
 
     @pytest.mark.smoke
-    @pytest.mark.xfail(reason="BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník")
+    @pytest.mark.xfail(
+        reason="BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník",
+        strict=True,
+    )
     def test_tc44_sec_customer_cannot_access_lecturer_operations(self, page: Page, test_user: dict):
         """TC-44-SEC: Zákaz lektorských operací pro uživatele v roli zákazníka."""
         login_user(page, test_user["email"], test_user["password"])
@@ -94,10 +97,10 @@ class TestSecurityAndAuthorization:
         logged_in_cookies = {c["name"]: c["value"] for c in context.cookies()}
         logged_in_session = logged_in_cookies.get("laravel_session")
 
-        # Session ID se po úspěšném přihlášení změnilo
+        # Session ID musí existovat před přihlášením a po úspěšném přihlášení se změnit
+        assert initial_session is not None, "Před přihlášením musí existovat úvodní laravel_session cookie"
         assert logged_in_session is not None
-        if initial_session:
-            assert logged_in_session != initial_session, "Session ID musí být při přihlášení regenerováno"
+        assert logged_in_session != initial_session, "Session ID musí být při přihlášení regenerováno"
 
         # Odhlášení
         logout_user(page)

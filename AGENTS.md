@@ -17,7 +17,7 @@ Testovanou aplikací je vzdělávací portál pro nabídku a správu IT kurzů s
 - **`Guest` (Host):** Prohlíží veřejný katalog a detaily kurzů.
 - **`Customer` (Student):** Provádí registraci na běhy kurzů, spravuje *Moje kurzy* a profil.
 - **`Lecturer` (Lektor):** Správa kurzů, vypisování běhů a zobrazení účastníků.
-- *Detailní požadavky:* viz [docs/požadavky_ust_podle_src.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/po%C5%BEadavky_ust_podle_src.md) a katalog [docs/TEST_CASES.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/TEST_CASES.md).
+- *Detailní požadavky:* viz [docs/požadavky_ust_podle_src.md](docs/po%C5%BEadavky_ust_podle_src.md) a katalog [docs/TEST_CASES.md](docs/TEST_CASES.md).
 
 ---
 
@@ -47,7 +47,7 @@ Veškerý kód musí striktně patřit do jedné z 9 definovaných vrstev (žád
 ---
 
 ## 5. 🔍 Strategie lokátorů (Skill `locators`)
-Řiď se pravidly ve skillu [locators](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/.agents/skills/locators/SKILL.md):
+Řiď se pravidly ve skillu [locators](.agents/skills/locators/SKILL.md):
 - ✅ **Priorita #1:** Nativní metoda `page.get_by_test_id("nazev_prvku")`.
 - ✅ **Chybějící test_id:** Postupuj dle 6stupňové hierarchie (role/label $\rightarrow$ stabilní ID $\rightarrow$ text $\rightarrow$ atributy).
 - ✅ **Lokalizace v kontejneru:** Používej řetězení (`container.get_by_test_id(...)`) namísto indexů.
@@ -56,7 +56,7 @@ Veškerý kód musí striktně patřit do jedné z 9 definovaných vrstev (žád
 ---
 
 ## 6. 🎯 Pravidla pro aserce (Skill `assertions`)
-Řiď se pravidly ve skillu [assertions](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/.agents/skills/assertions/SKILL.md):
+Řiď se pravidly ve skillu [assertions](.agents/skills/assertions/SKILL.md):
 - ✅ **VŽDY:** Web-first aserce Playwrightu s auto-waitingem (`expect(locator).to_be_visible()`, `to_have_url()`, `to_have_text()`).
 - ❌ **NIKDY:** `time.sleep()`, umělé timeouty ani nativní python `assert locator.is_visible()`.
 - **3úrovňové ověření stavu:** Každý klíčový tok ověřuje **Routing** (URL) + **Session** (`logout_button`) + **Data State / UI Feedback** (zprávy, chybové stavy).
@@ -68,7 +68,7 @@ Veškerý kód musí striktně patřit do jedné z 9 definovaných vrstev (žád
 - Každý test musí mít:
   1. **Doménový marker:** `@pytest.mark.<domena>` (`auth`, `courses`, `enrollment`, `lecturer`, `navigation`, `profile`, `security`).
   2. **Marker závažnosti:** `@pytest.mark.smoke` nebo `@pytest.mark.regression`.
-- Podrobné mapování viz skill [traceability](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/.agents/skills/traceability/SKILL.md).
+- Podrobné mapování viz skill [traceability](.agents/skills/traceability/SKILL.md).
 
 ---
 
@@ -96,5 +96,5 @@ Veškerý kód musí striktně patřit do jedné z 9 definovaných vrstev (žád
 1. **Zákaz ohýbání testů (No Fake Passes):** Přísný zákaz upravovat očekávané výsledky, oslabovat či mazat aserce jen proto, aby test násilně prošel na zelenou.
 2. **Defekt aplikace (*Product Bug*):**
    - Pokud test odpovídá specifikaci, ale aplikace selhává, **agent nesmí test upravovat tak, aby vadu maskoval**.
-   - Agent zastaví práci, nahlásí blokátor a postupuje dle skillu [bug_reporting](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/.agents/skills/bug_reporting/SKILL.md) (navrhne `@pytest.mark.xfail` a zápis do [docs/JIRA_BUG_REPORTS.md](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/docs/JIRA_BUG_REPORTS.md)).
+   - Agent zastaví práci, nahlásí blokátor a postupuje dle skillu [bug_reporting](.agents/skills/bug_reporting/SKILL.md) (navrhne `@pytest.mark.xfail` a zápis do [docs/JIRA_BUG_REPORTS.md](docs/JIRA_BUG_REPORTS.md)).
 3. **Fail-Fast přístup:** Pokud zadání obsahuje nejasnosti nebo prvek v UI neexistuje, agent nesmí hádat ani obcházet systém. Má povinnost práci pozastavit a položit upřesňující dotaz testerovi.

@@ -7,6 +7,7 @@ Architektura testů:
 - Markery: @pytest.mark.auth, @pytest.mark.regression
 """
 
+import re
 import pytest
 from playwright.sync_api import Page, expect
 from pages.forgot_password_page import ForgotPasswordPage
@@ -127,27 +128,44 @@ class TestPasswordReset:
     # =========================================================================
 
     @pytest.mark.regression
+    @pytest.mark.xfail(
+        reason="BR-05: Stránka /overeni-emailu vrací prázdný kontejner bez rozhraní pro potvrzení ověření e-mailu",
+        strict=True,
+    )
     def test_tc17_auth_email_verification_success(self, page: Page):
         """TC-17-AUTH: Úspěšné ověření e-mailu přes platný odkaz."""
         verify_page = EmailVerificationPage(page)
         verify_page.open_verification_link(token="platny_verifikacni_token_123")
 
-        # Ověření, že systém přijal požadavek a zobrazil stránku
+        # Ověření zobrazení potvrzující zprávy o úspěšném ověření (nejen prázdného kontejneru)
         expect(verify_page.container).to_be_visible()
+        expect(verify_page.container).to_contain_text(re.compile(r"ověř|úspěš|potvrz", re.IGNORECASE))
 
     @pytest.mark.regression
+    @pytest.mark.xfail(
+        reason="BR-05: Stránka /overeni-emailu vrací prázdný kontejner bez chybového hlášení pro neplatný token",
+        strict=True,
+    )
     def test_tc18_auth_email_verification_invalid_link(self, page: Page):
         """TC-18-AUTH: Pokus o ověření e-mailu s neplatným odkazem."""
         verify_page = EmailVerificationPage(page)
         verify_page.open_verification_link(token="neplatny_token_xyz")
 
+        # Ověření zamítnutí a zobrazení chybové informace o neplatném odkazu
         expect(verify_page.container).to_be_visible()
+        expect(verify_page.container).to_contain_text(re.compile(r"neplatn|expiro|chyb", re.IGNORECASE))
 
     @pytest.mark.regression
+    @pytest.mark.xfail(
+        reason="BR-05: Stránka /email/verify vrací prázdný kontejner bez UI pro znovuzaslání ověřovacího e-mailu",
+        strict=True,
+    )
     def test_tc19_auth_resend_verification_email_rate_limit(self, page: Page):
         """TC-19-AUTH: Znovuzaslání ověřovacího e-mailu a časový limit."""
         verify_page = EmailVerificationPage(page)
         verify_page.open_prompt()
 
+        # Ověření zobrazení výzvy a obsahu pro znovuzaslání ověřovacího e-mailu
         expect(verify_page.container).to_be_visible()
+        expect(verify_page.container).to_contain_text(re.compile(r"odeslat|ověř|e-mail", re.IGNORECASE))
 

@@ -65,7 +65,10 @@ class TestCourseEnrollment:
         expect(profile_page.ico_input).to_have_value(valid_ico)
 
     @pytest.mark.regression
-    @pytest.mark.xfail(reason="Aplikace v rozporu s US-11 AK-3 vyžaduje IČO jako povinné a při prázdném poli hlásí Neplatné IČO")
+    @pytest.mark.xfail(
+        reason="Aplikace v rozporu s US-11 AK-3 vyžaduje IČO jako povinné a při prázdném poli hlásí Neplatné IČO",
+        strict=True,
+    )
     def test_tc28_enr_successful_enrollment_without_ico(self, page: Page):
         """TC-28-ENR: Úspěšný zápis na kurz bez vyplněného IČO (IČO je nepovinné)."""
         # 1. ARRANGE: Otevření detailu kurzu a přechod do formuláře zápisu

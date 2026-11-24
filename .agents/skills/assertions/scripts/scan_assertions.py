@@ -8,13 +8,16 @@ standardů kvality assertů a detekci známých anti-patternů:
 2. Zákaz synchronních assertů nad UI (assert locator.is_visible() -> expect(locator).to_be_visible())
 3. Zákaz testování celého HTML přes assert "..." in page.content()
 4. Zákaz assertů uvnitř Page Object Model tříd v pages/
-5. Detekce mělkých testů (pouze to_have_url bez kontroly prvků a stavu)
+5. Detekce mělkých testů (pouze to_have_url nebo jediná kontrola viditelnosti obecného kontejneru)
 6. Zákaz prázdných textových matcherů (to_contain_text(""))
 7. Detekce potenciálně rizikových negativních kontrol (not_to_be_visible) bez ustálení stavu
+8. Zákaz podmíněných if asercí v testech (maskování selhání)
+9. Povinný parametr strict=True u @pytest.mark.xfail
 
 Podporuje volitelný přepínač --fix pro automatickou opravu bezpečných případů.
 """
 
+import ast
 import os
 import re
 import sys
@@ -64,6 +67,148 @@ class AssertionViolation:
         self.message = message
         self.suggested_fix = suggested_fix
         self.fix_available = fix_available
+
+
+def _is_pytest_xfail_attr(node: ast.AST) -> bool:
+    """Ověří, zda AST uzel reprezentuje výraz `pytest.mark.xfail`."""
+    return (
+        isinstance(node, ast.Attribute)
+        and node.attr == "xfail"
+        and isinstance(node.value, ast.Attribute)
+        and node.value.attr == "mark"
+        and isinstance(node.value.value, ast.Name)
+        and node.value.value.id == "pytest"
+    )
+
+
+def _stmts_contain_assertion(stmts: List[ast.stmt]) -> bool:
+    """Vrátí True, pokud příkazy obsahují `assert` nebo `expect(...)` (mimo vnořené `if`)."""
+    for stmt in stmts:
+        if isinstance(stmt, ast.If):
+            continue
+        for child in ast.walk(stmt):
+            if isinstance(child, ast.Assert):
+                return True
+            if (
+                isinstance(child, ast.Call)
+                and isinstance(child.func, ast.Name)
+                and child.func.id == "expect"
+            ):
+                return True
+    return False
+
+
+def _extract_expect_info(node: ast.AST) -> Tuple[str, str]:
+    """Pokud uzel odpovídá `expect(target).method(...)`, vrátí `(method, target_src)`, jinak `('', '')`."""
+    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+        return "", ""
+    inner = node.func.value
+    if (
+        isinstance(inner, ast.Call)
+        and isinstance(inner.func, ast.Name)
+        and inner.func.id == "expect"
+        and inner.args
+    ):
+        target_str = ast.unparse(inner.args[0]) if hasattr(ast, "unparse") else ""
+        return node.func.attr, target_str
+    return "", ""
+
+
+def _analyze_ast_test_rules(file_path: str, lines: List[str]) -> List[AssertionViolation]:
+    """AST kontroly pro testy: zákaz podmíněných `if` asercí a povinný `strict=True` u `xfail`."""
+    violations: List[AssertionViolation] = []
+    source = "".join(lines)
+    try:
+        tree = ast.parse(source, filename=file_path)
+    except SyntaxError:
+        return violations
+
+    for node in ast.walk(tree):
+        # 6. Zákaz podmíněných if asercí
+        if isinstance(node, ast.If):
+            orelse_non_if = [s for s in node.orelse if not isinstance(s, ast.If)]
+            if _stmts_contain_assertion(node.body) or _stmts_contain_assertion(orelse_non_if):
+                line_text = lines[node.lineno - 1] if 0 < node.lineno <= len(lines) else ""
+                violations.append(
+                    AssertionViolation(
+                        file_path=file_path,
+                        line_no=node.lineno,
+                        line_text=line_text,
+                        rule_id="RULE-06-NO-CONDITIONAL-ASSERT",
+                        message="Podmíněná aserce uvnitř 'if' větve může tiše přeskočit kontrolu a způsobit falešný PASS.",
+                        suggested_fix="Odstraňte větev 'if' a použijte deterministický průběh testu s bezpodmínečným expect(...).",
+                        fix_available=False,
+                    )
+                )
+
+        # 7. Povinný strict=True u @pytest.mark.xfail
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            for dec in node.decorator_list:
+                is_bare_xfail = _is_pytest_xfail_attr(dec)
+                is_call_xfail = isinstance(dec, ast.Call) and _is_pytest_xfail_attr(dec.func)
+                if not (is_bare_xfail or is_call_xfail):
+                    continue
+
+                has_strict_true = (
+                    is_call_xfail
+                    and any(
+                        kw.arg == "strict"
+                        and isinstance(kw.value, ast.Constant)
+                        and kw.value.value is True
+                        for kw in dec.keywords
+                    )
+                )
+                if not has_strict_true:
+                    line_text = lines[dec.lineno - 1] if 0 < dec.lineno <= len(lines) else ""
+                    violations.append(
+                        AssertionViolation(
+                            file_path=file_path,
+                            line_no=dec.lineno,
+                            line_text=line_text,
+                            rule_id="RULE-07-XFAIL-STRICT",
+                            message="Dekorátor @pytest.mark.xfail musí obsahovat explicitní strict=True.",
+                            suggested_fix="@pytest.mark.xfail(reason=\"...\", strict=True)",
+                            fix_available=False,
+                        )
+                    )
+
+        # 8. Detekce mělkých testů (pouze to_have_url nebo jediná viditelnost obecného kontejneru)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_"):
+            expect_calls = []
+            assert_count = 0
+            for child in ast.walk(node):
+                if isinstance(child, ast.Assert):
+                    assert_count += 1
+                else:
+                    method_name, target_str = _extract_expect_info(child)
+                    if method_name:
+                        expect_calls.append((child.lineno, method_name, target_str))
+
+            if assert_count == 0 and len(expect_calls) == 1:
+                lineno, method_name, target_str = expect_calls[0]
+                is_url_only = method_name == "to_have_url"
+                is_generic_container = method_name == "to_be_visible" and any(
+                    kw in target_str.lower()
+                    for kw in ("container", "wrapper", "layout", "body", "main")
+                )
+                if is_url_only or is_generic_container:
+                    line_text = lines[lineno - 1] if 0 < lineno <= len(lines) else ""
+                    violations.append(
+                        AssertionViolation(
+                            file_path=file_path,
+                            line_no=lineno,
+                            line_text=line_text,
+                            rule_id="RULE-08-SHALLOW-ASSERTION",
+                            message=(
+                                f"Mělký test '{node.name}': jediná aserce '{method_name}' "
+                                f"nad '{target_str}' neověřuje konkrétní stav ani obsah."
+                            ),
+                            suggested_fix="Doplňte konkrétní ověření textu, chybové hlášky nebo datového stavu.",
+                            fix_available=False,
+                        )
+                    )
+
+    return violations
 
 
 def analyze_file(file_path: str) -> List[AssertionViolation]:
@@ -187,6 +332,10 @@ def analyze_file(file_path: str) -> List[AssertionViolation]:
                 )
             )
 
+    if is_test_file:
+        violations.extend(_analyze_ast_test_rules(file_path, lines))
+
+    violations.sort(key=lambda v: v.line_no)
     return violations
 
 

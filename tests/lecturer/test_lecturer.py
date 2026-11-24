@@ -56,7 +56,10 @@ class TestLecturerCourseManagement:
         expect(create_page.submit_button).to_be_visible()
 
     @pytest.mark.regression
-    @pytest.mark.xfail(reason="Aplikace v testovacím prostředí v rozporu s US-13 nekontroluje poměr stran obrázku na frontendu")
+    @pytest.mark.xfail(
+        reason="Aplikace v testovacím prostředí v rozporu s US-13 nekontroluje poměr stran obrázku na frontendu",
+        strict=True,
+    )
     def test_tc33_lec_reject_invalid_aspect_ratio_image(self, page: Page):
         """TC-33-LEC: Odmítnutí náhledového obrázku s nevyhovujícím poměrem stran."""
         login_lecturer(page)
@@ -77,7 +80,10 @@ class TestLecturerCourseManagement:
         expect(create_page.form).to_be_visible()
 
     @pytest.mark.regression
-    @pytest.mark.xfail(reason="Aplikace v testovacím prostředí postrádá validaci povinných polí a číselných hodnot")
+    @pytest.mark.xfail(
+        reason="Aplikace v testovacím prostředí postrádá validaci povinných polí a číselných hodnot",
+        strict=True,
+    )
     def test_tc34_lec_validation_required_fields_and_numeric_values(self, page: Page):
         """TC-34-LEC: Validace povinných polí a číselné kapacity/ceny kurzu."""
         login_lecturer(page)
@@ -123,7 +129,10 @@ class TestLecturerCourseManagement:
         expect(course_detail_page.heading).to_be_visible()
 
     @pytest.mark.regression
-    @pytest.mark.xfail(reason="Aplikace v testovacím prostředí odesílá formulář termínu bez klientské validace povinných polí (US-14 AK-3)")
+    @pytest.mark.xfail(
+        reason="Aplikace v testovacím prostředí odesílá formulář termínu bez klientské validace povinných polí (US-14 AK-3)",
+        strict=True,
+    )
     def test_tc36_lec_validation_iteration_required_fields(self, page: Page):
         """TC-36-LEC: Validace povinných polí při vypsání termínu."""
         login_lecturer(page)
@@ -185,7 +194,10 @@ class TestLecturerCourseManagement:
         expect(participants_page.primary_ico).to_be_visible()
 
     @pytest.mark.smoke
-    @pytest.mark.xfail(reason="BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník")
+    @pytest.mark.xfail(
+        reason="BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník",
+        strict=True,
+    )
     def test_tc38_lec_customer_cannot_access_lecturer_create_course(self, page: Page, test_user: dict):
         """TC-38-LEC: Zamezení přístupu k lektorským operacím pro běžného zákazníka."""
         login_user(page, test_user["email"], test_user["password"])

@@ -33,7 +33,7 @@ Funguje na principu **Maker vs. Checker**: Auditor pouze diagnostikuje a reportu
 | :--- | :--- | :--- | :--- |
 | **1.** | **Vymezení rozsahu (Scope)** | Určí rozsah auditu: buď **konkrétní soubor/modul**, nebo **celý projekt**. | Zadání uživatele. |
 | **2.** | **Automatizovaný statický sken** | Spustí existující projektové skenery v read-only režimu a zaznamená nálezy. | CLI příkazy (viz níže). |
-| **3.** | **Přezkum architektury a běhu** | Zkontroluje soulad s [AGENTS.md](../../../AGENTS.md) (žádné selektory v testech, žádné asserty v POM, AAA struktura, dynamická data) a volitelně ověří stabilitu testů přes Pytest. | `pytest <cesta> -v` |
+| **3.** | **Přezkum architektury a běhu** | Zkontroluje soulad s [AGENTS.md](../../../AGENTS.md) (žádné selektory v testech, žádné asserty v POM, AAA struktura, dynamická data, zákaz podmíněných `if` asercí, zákaz mělkých asercí na obecný kontejner/URL, povinný `strict=True` a `reason` u `@pytest.mark.xfail` i `xfail_strict = true` v `pyproject.toml`) a volitelně ověří stabilitu testů přes Pytest. | `pytest <cesta> -v` |
 | **4.** | **Vystavení Quality Gate Reportu** | Sestaví strukturovaný report pro testera s jasným výsledkem `PASSED` / `FAILED`. | Šablona reportu (viz níže). |
 
 ---

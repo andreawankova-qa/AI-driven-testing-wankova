@@ -13,6 +13,7 @@ Každá zaznamenaná chyba má přiděleno unikátní identifikační číslo (`
 | [**BR-02**](#br-02-lec-chybějící-klientská-validace-formuláře-kurzu-a-přesměrování-při-chybě-api-http-422) | `LEC` | Chybějící klientská validace formuláře kurzu a přesměrování při chybě API (HTTP 422) | **Medium** | **Medium** | US-13 | 🔴 Otevřeno |
 | [**BR-03**](#br-03-auth-chybějící-klientské-rozhraní-pro-dokončení-obnovy-hesla-na-reset-password) | `AUTH` | Chybějící klientské rozhraní pro dokončení obnovy hesla na `/reset-password` | **High** | **High** | US-05 | 🔴 Otevřeno |
 | [**BR-04**](#br-04-enr-chybná-validace-nepovinného-ičo--prázdné-pole-způsobuje-chybu-neplatné-ičo-a-blokuje-zápis) | `ENR` | Chybná validace nepovinného IČO – prázdné pole blokuje registraci s chybou „Neplatné IČO“ | **Medium** | **High** | US-11 | 🔴 Otevřeno |
+| [**BR-05**](#br-05-auth-chybějící-klientské-rozhraní-pro-ověření-e-mailu-overeni-emailu-a-emailverify) | `AUTH` | Chybějící klientské rozhraní pro ověření e-mailu (/overeni-emailu a /email/verify) | **High** | **Medium** | US-06 | 🔴 Otevřeno |
 
 > [!NOTE]
 > **Životní cyklus stavů incidentu:** `🔴 Otevřeno (Open)` ➔ `🟡 V řešení (In Progress)` ➔ `🟢 Vyřešeno (Closed / Verified)`  
@@ -43,6 +44,7 @@ Každá zaznamenaná chyba má přiděleno unikátní identifikační číslo (`
 * **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
 * **Nahlásil:** Andrea Wanková
 * **Datum nálezu:** 19. 10. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
 
 ---
 
@@ -93,6 +95,7 @@ Běžný přihlášený uživatel s klientskou rolí **Zákazník (Customer)** t
 
 #### 💻 Technický důkaz a vizuální záznamy (Failure Log & Visual Evidence)
 * **Výstup z běhu testů:** `tests/lecturer/test_lecturer.py::TestLecturerCourseManagement::test_tc38_lec_customer_cannot_access_lecturer_create_course` a `tests/security/test_security.py::TestSecurityAndAuthorization::test_tc44_sec_customer_cannot_access_lecturer_operations`
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-01_20261124_1318.png`
 * **Chybový výpis z Playwrightu (AssertionError & Call Log):**
 
 ```text
@@ -140,6 +143,7 @@ E        - unexpected value "visible"
 * **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
 * **Nahlásil:** Andrea Wanková
 * **Datum nálezu:** 28. 10. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
 
 ---
 
@@ -196,6 +200,7 @@ Lektor tak ztrácí kontext, nezíská žádnou zpětnou vazbu o neúspěšném 
 
 #### 💻 Technický důkaz a vizuální záznamy (Failure Log & Visual Evidence)
 * **Výstup z běhu testu:** `tests/lecturer/test_lecturer.py::TestLecturerCourseManagement::test_tc34_lec_validation_required_fields_and_numeric_values`
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-02_20261124_1322.png`
 * **Zachycená síťová komunikace:**
 ```text
 Request: POST http://testovani.kitner.cz/api/courses
@@ -250,6 +255,7 @@ E     Error: element(s) not found (Page redirected to /courses/)
 * **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
 * **Nahlásil:** Andrea Wanková
 * **Datum nálezu:** 1. 11. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
 
 ---
 
@@ -281,6 +287,7 @@ Pokud však uživatel otevře odkaz pro dokončení resetu hesla s tokenem (nap�
 ---
 
 #### 💻 Technický důkaz (Failure Log)
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-03_20261124_1322.png`
 ```text
 > expect(reset_page.password_input).to_be_visible()
 E AssertionError: Locator expected to be visible
@@ -314,6 +321,7 @@ E   - waiting for get_by_test_id("password_input")
 * **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
 * **Nahlásil:** Andrea Wanková
 * **Datum nálezu:** 9. 11. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
 
 ---
 
@@ -351,6 +359,7 @@ V aplikaci však validační logika na klientské straně vyhodnocuje i prázdn�
 ---
 
 #### 💻 Technický důkaz (Failure Log)
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-04_20261124_1322.png`
 ```text
 > expect(page).to_have_url(my_courses_page.URL)
 E AssertionError: Page URL expected to be 'http://testovani.kitner.cz/my-courses'
@@ -370,3 +379,79 @@ if (ico && ico.trim() !== "") {
 }
 ```
 
+---
+
+### 🐞 BR-05 [AUTH]: Chybějící klientské rozhraní pro ověření e-mailu (/overeni-emailu a /email/verify)
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login & Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[AUTH/Verification] Chybějící klientské rozhraní pro ověření e-mailu a znovuzaslání odkazu (/overeni-emailu a /email/verify)`
+* **Komponenta:** Frontend / Autentizace / Ověření e-mailu
+* **Závažnost (Severity):** High (Uživatel nemůže dokončit ověření e-mailové adresy ani si vyžádat nový ověřovací odkaz)
+* **Priorita (Priority):** Medium (Chybí celá klientská funkcionalita požadovaná v US-06; přihlášení základních účtů je funkční)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:**
+  - [`US-06: Ověření e-mailové adresy (Email Verification)`](požadavky_ust_podle_src.md#us-06-ověření-e-mailové-adresy-email-verification)
+* **Související Test Casy:**
+  - `TC-17-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+  - `TC-18-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+  - `TC-19-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 23. 11. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
+
+---
+
+#### 📝 Popis problému (Description)
+Aplikace vrací na adresách `/overeni-emailu?token=...` a `/email/verify` stavový kód HTTP `200`, ale klientská SPA aplikace vykreslí pouze prázdnou stránku (`<div data-testid="page_container">` s prázdným obsahem a `<title>Document</title>`). Chybí zde jakékoli zobrazení potvrzení o úspěšném ověření e-mailu, chybové hlášení při neplatném/expirovaném tokenu i rozhraní pro opětovné zaslání ověřovacího odkazu.
+
+---
+
+#### ⚙️ Předpoklady (Preconditions)
+* Testovací prostředí `http://testovani.kitner.cz` je dostupné.
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Otevři v prohlížeči URL `http://testovani.kitner.cz/overeni-emailu?token=platny_verifikacni_token_123` (příp. s neplatným tokenem `neplatny_token_xyz`).
+2. Otevři v prohlížeči URL `http://testovani.kitner.cz/email/verify`.
+3. Počkej na dokončení načtení sítě (`networkidle`) a zkontroluj obsah stránky.
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Na `/overeni-emailu?token=...` se zobrazí informace o úspěšném ověření e-mailu, nebo chybová hláška o neplatném či expirovaném odkazu (dle platnosti tokenu).
+* Na `/email/verify` se zobrazí výzva k ověření e-mailu a ovládací prvek pro znovuzaslání ověřovacího e-mailu (s rate-limit ochranou).
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Na všech třech kontrolovaných URL zůstává stránka zcela prázdná (prázdný `page_container` bez textu, hlášek i formuláře/tlačítka).
+
+---
+
+#### ⚠️ Bezpečnostní a byznysový dopad (Security & Business Impact)
+* Uživatelé nemohou ověřit vlastnictví své e-mailové schránky ani si vyžádat nový odkaz, čímž není splněna žádná z částí `US-06`.
+
+---
+
+#### 💻 Technický důkaz a vizuální záznamy (Failure Log & Visual Evidence)
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-05_20261124_1322.png`
+```text
+URL: http://testovani.kitner.cz/overeni-emailu?token=platny_verifikacni_token_123 -> status: 200, TITLE: Document, TEXT: ""
+URL: http://testovani.kitner.cz/overeni-emailu?token=neplatny_token_xyz -> status: 200, TITLE: Document, TEXT: ""
+URL: http://testovani.kitner.cz/email/verify -> status: 200, TITLE: Document, TEXT: ""
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+1. Implementovat v routeru a komponentách frontendu zobrazení stavových zpráv pro `/overeni-emailu` (úspěch vs. neplatný/expirovaný token).
+2. Implementovat UI komponentu na `/email/verify` s tlačítkem pro znovuzaslání ověřovacího e-mailu a napojením na backendový rate-limit endpoint.
+
+---
+
+#### 🔄 Záznam o verifikaci opravy (Verification Log)
+* *23. 11. 2026:* Chyba potvrzena v testovacím prostředí (`TC-17-AUTH`, `TC-18-AUTH`, `TC-19-AUTH` označeny jako `@pytest.mark.xfail(..., strict=True)`). Čeká na opravu.

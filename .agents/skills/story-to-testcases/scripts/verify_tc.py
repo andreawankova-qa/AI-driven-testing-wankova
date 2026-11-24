@@ -25,11 +25,12 @@ class TestCaseDoDValidator:
     def __init__(self, tc_file_path: str, story_file_path: str = None, story_id: str = None, explicit_aks: List[str] = None):
         self.tc_file_path = tc_file_path
         self.story_file_path = story_file_path
-        self.story_id = story_id
+        self.story_id = story_id.strip().upper() if story_id else None
         self.explicit_aks = explicit_aks or []
         self.errors: List[str] = []
         self.warnings: List[str] = []
         self.test_cases: List[Dict] = []
+        self.total_test_cases_in_file: int = 0
         self.story_aks: Set[str] = set()
 
     def load_files(self) -> bool:
@@ -179,11 +180,24 @@ class TestCaseDoDValidator:
         if current_tc:
             self.test_cases.append(current_tc)
 
+        self.total_test_cases_in_file = len(self.test_cases)
+
+        # Pokud je zadáno --story-id, filtrujeme pouze test casy patřící dané User Story
+        if self.story_id:
+            self.test_cases = [
+                tc for tc in self.test_cases if self.story_id in tc["stories"]
+            ]
+
     def validate_dod(self):
         """Vyhodnotí splnění všech pravidel Definice hotovo (DoD)."""
         # 1. Pravidlo: Existují test casy?
         if not self.test_cases:
-            self.errors.append("V souboru nebyly nalezeny žádné test casy ve formátu '#### TC-xx: Název'.")
+            if self.story_id:
+                self.errors.append(
+                    f"V souboru '{self.tc_file_path}' nebyly nalezeny žádné test casy pro User Story '{self.story_id}'."
+                )
+            else:
+                self.errors.append("V souboru nebyly nalezeny žádné test casy ve formátu '#### TC-xx: Název'.")
             return
 
         tc_ids = set()
@@ -263,7 +277,12 @@ class TestCaseDoDValidator:
             print(f"📖 Soubor se specifikací: {self.story_file_path}")
         if self.story_id:
             print(f"🎯 Analyzovaná User Story: {self.story_id}")
-        print(f"📊 Celkem nalezených test casů: {len(self.test_cases)}")
+            print(
+                f"📊 Nalezených test casů pro {self.story_id}: {len(self.test_cases)} "
+                f"(z celkových {self.total_test_cases_in_file} v souboru)"
+            )
+        else:
+            print(f"📊 Celkem nalezených test casů: {len(self.test_cases)}")
 
         if self.story_aks:
             print(f"🎯 Vyžadovaná akceptační kritéria: {', '.join(sorted(self.story_aks))}")

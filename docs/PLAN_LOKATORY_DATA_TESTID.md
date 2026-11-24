@@ -90,5 +90,5 @@ Tento plán popisuje konkrétní kroky pro přechod všech lokátorů v projektu
 
 ### Fáze 4: Aktualizace dokumentace
 
-1. Aktualizovat [`TEST_ASSERTIONS_OVERVIEW.md`](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/TEST_ASSERTIONS_OVERVIEW.md).
-2. Aktualizovat [`TEST_EXECUTION_REPORT.md`](file:///Users/andreawank/Software%20tester/AI%20automatizovan%C3%A9%20testov%C3%A1n%C3%AD/TEST_EXECUTION_REPORT.md).
+1. Aktualizovat [`TEST_ASSERTIONS_OVERVIEW.md`](TEST_ASSERTIONS_OVERVIEW.md).
+2. Aktualizovat [`TEST_EXECUTION_REPORT.md`](TEST_EXECUTION_REPORT.md).

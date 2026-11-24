@@ -14,6 +14,8 @@ import sys
 import unicodedata
 from pathlib import Path
 
+from generate_bug_reports import DEFAULT_OUTPUT_PATH, generate_bug_reports_html
+
 # Cesta k centrálnímu registru chyb
 DEFAULT_DOCS_PATH = Path(__file__).resolve().parents[4] / "docs" / "JIRA_BUG_REPORTS.md"
 
@@ -208,6 +210,8 @@ def append_bug_report(docs_path: Path, report_text: str, dry_run: bool = False) 
         return new_content
 
     docs_path.write_text(new_content, encoding="utf-8")
+    html_output = docs_path.parent / DEFAULT_OUTPUT_PATH.name
+    generate_bug_reports_html(docs_path, html_output)
     return new_content
 
 
@@ -255,6 +259,10 @@ def main():
     app_parser.add_argument("file", nargs="?", type=Path, help="Soubor s hlášením (nebo stdin)")
     app_parser.add_argument("--dry-run", action="store_true", help="Pouze zobrazí náhled změn bez zápisu do souboru")
 
+    # html
+    html_parser = subparsers.add_parser("html", help="Vygeneruje HTML přehled bug reportů do docs/bug_reports.html")
+    html_parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH, help="Výstupní cesta HTML souboru")
+
     args = parser.parse_args()
 
     try:
@@ -279,7 +287,13 @@ def main():
             text = args.file.read_text(encoding="utf-8") if args.file else sys.stdin.read()
             append_bug_report(args.docs_path, text, dry_run=args.dry_run)
             if not args.dry_run:
+                html_output = args.docs_path.parent / DEFAULT_OUTPUT_PATH.name
                 print(f"✅ Hlášení bylo úspěšně připojeno do {args.docs_path}")
+                print(f"✅ HTML report byl automaticky aktualizován: {html_output}")
+
+        elif args.command == "html":
+            out = generate_bug_reports_html(args.docs_path, args.output)
+            print(f"✅ HTML report byl úspěšně vygenerován: {out}")
 
     except Exception as e:
         print(f"❌ Chyba: {e}", file=sys.stderr)

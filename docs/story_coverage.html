@@ -1,0 +1,2662 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Přehled pokrytí User Stories automatizovanými testy</title>
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+            --warning: #d97706;
+            --warning-bg: #fef3c7;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --amber: #ea580c;
+            --amber-bg: #ffedd5;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            padding: 30px 20px;
+            line-height: 1.5;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        header { margin-bottom: 28px; }
+        h1 { font-size: 26px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .subtitle { color: var(--text-muted); font-size: 14px; }
+        
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .kpi-title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+        .kpi-value { font-size: 28px; font-weight: 700; color: var(--text-main); margin-top: 4px; }
+        .kpi-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Filter Toolbar */
+        .toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .filter-btn {
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            color: #475569;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .filter-btn:hover { background: #e2e8f0; }
+        .filter-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .search-box {
+            padding: 7px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            width: 260px;
+            outline: none;
+        }
+        .search-box:focus { border-color: var(--primary); }
+
+        /* Table */
+        .table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        tr.story-row { cursor: pointer; transition: background 0.1s ease; }
+        tr.story-row:hover { background: #f1f5f9; }
+        .text-center { text-align: center; }
+        .col-title { font-weight: 500; max-width: 380px; }
+
+        /* Badges & Tags */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--success-bg); color: var(--success); }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); }
+        .badge-amber { background: var(--amber-bg); color: var(--amber); }
+
+        .module-tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .mod-auth { background: #e0e7ff; color: #3730a3; }
+        .mod-crs { background: #dbeafe; color: #1e40af; }
+        .mod-enr { background: #ccfbf1; color: #115e59; }
+        .mod-lec { background: #fef3c7; color: #92400e; }
+        .mod-prf { background: #f3e8ff; color: #6b21a8; }
+        .mod-sec { background: #fee2e2; color: #991b1b; }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .pill-success { background: var(--success-bg); color: var(--success); }
+        .pill-warning { background: var(--warning-bg); color: var(--warning); }
+        .pill-danger { background: var(--danger-bg); color: var(--danger); }
+        .pill-muted { background: #f1f5f9; color: var(--text-muted); }
+
+        .btn-toggle {
+            background: none;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+        .btn-toggle.open { transform: rotate(180deg); color: var(--primary); }
+
+        /* Progress Bar */
+        .progress-wrap { width: 140px; }
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 3px;
+        }
+        .crit-label { font-size: 11px; color: var(--text-muted); }
+
+        /* Accordion Detail */
+        tr.accordion-content { display: none; background: #fafafa; }
+        tr.accordion-content.show { display: table-row; }
+        .accordion-inner { padding: 18px 24px; }
+        .story-desc {
+            background: #ffffff;
+            border-left: 3px solid var(--primary);
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #334155;
+            border-radius: 0 6px 6px 0;
+        }
+        .story-bugs {
+            background: var(--warning-bg);
+            border: 1px solid #fde68a;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .story-bugs h5 { margin-bottom: 4px; color: #92400e; }
+        .story-bugs ul { padding-left: 18px; }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+        .detail-col h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #475569;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+        .crit-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .crit-item {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .crit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .crit-tcs { font-size: 11px; color: var(--text-muted); }
+        .crit-text { color: #334155; }
+
+        .tc-list { display: flex; flex-direction: column; gap: 8px; }
+        .tc-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .tc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .tc-id { font-size: 12px; }
+        .tc-title { font-size: 13px; color: #1e293b; flex-grow: 1; }
+        .tc-type { font-size: 11px; color: var(--text-muted); }
+        .tc-bottom { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+        .code-loc { color: #0284c7; }
+
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Přehled pokrytí User Stories automatizovanými testy</h1>
+            <p class="subtitle">E2E Testovací sada Kitner.cz | Vygenerováno: 23. 11. 2026 v 14:08</p>
+        </header>
+
+        <!-- KPI Summary Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">Míra pokrytí požadavků</div>
+                <div class="kpi-value">100.0 %</div>
+                <div class="kpi-sub">19 z 19 User Stories pokryto</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">User Stories</div>
+                <div class="kpi-value">19</div>
+                <div class="kpi-sub">🟢 19 plně | 🟡 0 část. | 🔴 0 ne</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Test Casy vs. Kód AT</div>
+                <div class="kpi-value">48 / 48</div>
+                <div class="kpi-sub">100.0 % testovacích případů v kódu</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Evidované defekty aplikace</div>
+                <div class="kpi-value">11</div>
+                <div class="kpi-sub">Označené testy jako @pytest.mark.xfail</div>
+            </div>
+        </div>
+
+        <!-- Toolbar & Filters -->
+        <div class="toolbar">
+            <div class="filter-group">
+                <span style="font-size: 13px; font-weight: 600; color: #475569; margin-right: 4px;">Stav:</span>
+                <button class="filter-btn active" onclick="setStatusFilter('all', this)">Vše (19)</button>
+                <button class="filter-btn" onclick="setStatusFilter('full', this)">🟢 Plně pokryto (8)</button>
+                <button class="filter-btn" onclick="setStatusFilter('xfail', this)">⚠️ S defektem (11)</button>
+                <button class="filter-btn" onclick="setStatusFilter('partial', this)">🟡 Částečně (0)</button>
+                <button class="filter-btn" onclick="setStatusFilter('uncovered', this)">🔴 Nepokryto (0)</button>
+            </div>
+            <input type="text" id="searchInput" class="search-box" placeholder="Hledat US, název, TC, modul..." oninput="applyFilters()">
+        </div>
+
+        <!-- Main Coverage Table -->
+        <div class="table-wrap">
+            <table id="coverageTable">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Modul</th>
+                        <th style="width: 80px;">US ID</th>
+                        <th>Název User Story</th>
+                        <th style="width: 60px;" class="text-center">TC</th>
+                        <th style="width: 60px;" class="text-center">AT</th>
+                        <th style="width: 170px;">Pokrytí AK</th>
+                        <th style="width: 150px;">Stav</th>
+                        <th style="width: 50px;" class="text-center">Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr class="story-row" data-module="AUTH" data-status="full" onclick="toggleAccordion('US-01')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-01</strong></td>
+                <td class="col-title">Registrace zákaznického účtu s automatickým přihlášením</td>
+                <td class="text-center"><code>5</code></td>
+                <td class="text-center"><code>5</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">8/8 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-01" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-01">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Nový zájemce o vzdělávání | <strong>Chci:</strong> Zaregistrovat si nový uživatelský účet zadáním svého jména, e-mailu a hesla s potvrzením | <strong>Abych:</strong> Získal zákaznický přístup a mohl se přihlašovat na vypsané kurzy</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (8/8 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-01-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Registrační formulář obsahuje pole pro jméno, e-mail, heslo a potvrzení hesla.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-04-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Všechna formulářová pole jsou povinná.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-02-AUTH</code>, <code>TC-04-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">E-mailová adresa musí být v platném formátu a v systému unikátní (nelze registrovat již existující e-mail).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-05-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Zadaný e-mail je před validací normalizován (odstranění mezer na začátku a konci) a systém je při ověřování unikátnosti necitlivý na velikost písmen.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-03-AUTH</code>, <code>TC-04-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Heslo musí splňovat definovaná bezpečnostní pravidla a musí se přesně shodovat s potvrzovacím polem.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-02-AUTH</code>, <code>TC-03-AUTH</code>, <code>TC-04-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">V případě neplatně vyplněných údajů zůstává uživatel na formuláři a pod příslušnými poli se zobrazí srozumitelná chybová hlášení.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-7</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-01-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšné registraci je uživateli automaticky přiřazena role zákazníka, je rovnou přihlášen do systému a přesměrován na domovskou stránku.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-8</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-01-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Na stránce registrace je k dispozici přímý odkaz pro přihlášení již existujících uživatelů a odkaz pro obnovu zapomenutého hesla.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (5/5):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-01-AUTH</code></span>
+                        <span class="tc-title"><strong>Úspěšná registrace zákaznického účtu</strong></span>
+                        <span class="tc-type">(Smoke / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_register.py:158</code> &rarr; <code>test_tc01_auth_registration_and_subsequent_login_with_enter_key</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-7, AK-8</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-02-AUTH</code></span>
+                        <span class="tc-title"><strong>Registrace s již existujícím e-mailem</strong></span>
+                        <span class="tc-type">(Negativní / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_register.py:141</code> &rarr; <code>test_tc02_auth_registration_duplicate_email</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3, AK-6</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-03-AUTH</code></span>
+                        <span class="tc-title"><strong>Registrace s neshodujícími se hesly</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_register.py:81</code> &rarr; <code>test_tc03_auth_registration_password_mismatch_and_empty_confirmation</code></span>
+                        <span class="tc-aks">Pokrývá: AK-5, AK-6</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-04-AUTH</code></span>
+                        <span class="tc-title"><strong>Validace povinných polí a neplatného e-mailu</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_register.py:119</code> &rarr; <code>test_tc04_auth_registration_invalid_email_format</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2, AK-3, AK-5, AK-6</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-05-AUTH</code></span>
+                        <span class="tc-title"><strong>Normalizace e-mailu (ořezání mezer, case-insensitive)</strong></span>
+                        <span class="tc-type">(Hraniční / P3)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_register.py:186</code> &rarr; <code>test_tc05_auth_email_normalization_on_registration</code></span>
+                        <span class="tc-aks">Pokrývá: AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="AUTH" data-status="full" onclick="toggleAccordion('US-02')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-02</strong></td>
+                <td class="col-title">Přihlášení do aplikace</td>
+                <td class="text-center"><code>5</code></td>
+                <td class="text-center"><code>5</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">7/7 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-02" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-02">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Registrovaný uživatel (zákazník nebo lektor) | <strong>Chci:</strong> Zadat svůj e-mail a heslo na přihlašovací stránce | <strong>Abych:</strong> Získal přístup ke všem funkcím a oprávněním příslušejícím mé roli</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (7/7 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-06-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Přihlašovací formulář obsahuje pole pro e-mail a heslo.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-08-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Obě pole jsou povinná – při odeslání prázdného formuláře je uživatel upozorněn na chybějící údaje.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-09-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Zadaný e-mail je tolerantní k velikosti písmen (case-insensitive) a systém automaticky ořezává mezery před a za adresou.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-07-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Při zadání neexistujícího e-mailu nebo chybného hesla systém přístup odmítne a zobrazí jednotnou chybovou zprávu o neplatných údajích (ochrana proti odhadování registrovaných e-mailů).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-06-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšném ověření údajů je uživatel přihlášen a přesměrován do systému na domovskou stránku.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-06-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Horní navigace se okamžitě přizpůsobí přihlášenému stavu: skryje se volba pro přihlášení a zpřístupní se privátní sekce (přehled kurzů, moje kurzy, domovská stránka, profil, odhlášení).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-7</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-10-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Formulář plně podporuje přístupné ovládání z klávesnice: přechod mezi prvky klávesou `Tab` (Email ➔ Heslo ➔ Přihlásit) a odeslání stiskem klávesy `Enter`.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (5/5):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-06-AUTH</code></span>
+                        <span class="tc-title"><strong>Úspěšné přihlášení uživatele s platnými údaji</strong></span>
+                        <span class="tc-type">(Smoke / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_login.py:156</code> &rarr; <code>test_tc06_auth_form_ui_elements_state</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-5, AK-6</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-07-AUTH</code></span>
+                        <span class="tc-title"><strong>Přihlášení s neplatným heslem / neexistujícím e-mailem</strong></span>
+                        <span class="tc-type">(Negativní / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_login.py:106</code> &rarr; <code>test_tc07_auth_invalid_and_incomplete_login_credentials</code></span>
+                        <span class="tc-aks">Pokrývá: AK-4</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-08-AUTH</code></span>
+                        <span class="tc-title"><strong>Odeslání prázdného přihlašovacího formuláře</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_login.py:128</code> &rarr; <code>test_tc08_auth_invalid_email_format_validation</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-09-AUTH</code></span>
+                        <span class="tc-title"><strong>Přihlášení s velkými písmeny a mezerami v e-mailu</strong></span>
+                        <span class="tc-type">(Hraniční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_logout.py:33</code> &rarr; <code>test_tc09_auth_session_persists_after_page_reload</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-10-AUTH</code></span>
+                        <span class="tc-title"><strong>Navigace klávesnicí (Tab + Enter) ve formuláři</strong></span>
+                        <span class="tc-type">(Přístupnost / P3)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_login.py:255</code> &rarr; <code>test_tc10_auth_keyboard_navigation_tab_and_enter</code></span>
+                        <span class="tc-aks">Pokrývá: AK-7</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="AUTH" data-status="full" onclick="toggleAccordion('US-03')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-03</strong></td>
+                <td class="col-title">Bezpečné odhlášení ze systému</td>
+                <td class="text-center"><code>1</code></td>
+                <td class="text-center"><code>1</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">4/4 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-03" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-03">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený uživatel | <strong>Chci:</strong> Mít v horní navigaci trvale dostupnou možnost se odhlásit | <strong>Abych:</strong> Bezpečně ukončil své sezení a zabránil neoprávněnému přístupu k mému účtu</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (4/4 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-11-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Tlačítko pro odhlášení je pro přihlášeného uživatele trvale viditelné v horní navigační liště.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-11-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Kliknutím na odhlášení dojde k okamžitému zneplatnění uživatelského sezení a smazání přístupových cookies/tokenů.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-11-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Uživatel je přesměrován na výchozí veřejnou stránku a v navigaci se opět zobrazí volba pro přihlášení.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-11-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po odhlášení již nelze přistupovat k privátním funkcím ani k profilu uživatele.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (1/1):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-11-AUTH</code></span>
+                        <span class="tc-title"><strong>Bezpečné odhlášení z horní navigace</strong></span>
+                        <span class="tc-type">(Smoke / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_logout.py:20</code> &rarr; <code>test_tc11_auth_login_and_logout_lifecycle</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-3, AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="AUTH" data-status="full" onclick="toggleAccordion('US-04')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-04</strong></td>
+                <td class="col-title">Žádost o obnovu zapomenutého hesla</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">4/4 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-04" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-04">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Uživatel, který zapomněl své heslo | <strong>Chci:</strong> Zadat svůj e-mail na stránce obnovy hesla a požádat o resetovací odkaz | <strong>Abych:</strong> Mohl bezpečně nastavit nové heslo ke svému účtu</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (4/4 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-12-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Formulář obsahuje pole pro e-mail a odesílací tlačítko.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-13-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Pole je povinné a ověřuje se platný formát e-mailové adresy.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-13-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Pokud e-mail není zadán nebo má chybný formát, formulář zobrazí validační chybu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-12-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po odeslání platné žádosti systém vygeneruje bezpečný, časově omezený resetovací odkaz a v rozhraní zobrazí potvrzení o odeslání požadavku.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-12-AUTH</code></span>
+                        <span class="tc-title"><strong>Odeslání platné žádosti o reset hesla</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:25</code> &rarr; <code>test_tc12_auth_forgot_password_request_submission</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-4</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-13-AUTH</code></span>
+                        <span class="tc-title"><strong>Žádost o reset s neplatným / prázdným e-mailem</strong></span>
+                        <span class="tc-type">(Validační / P3)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:39</code> &rarr; <code>test_tc13_auth_forgot_password_invalid_or_empty_email_validation</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2, AK-3</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="AUTH" data-status="xfail" onclick="toggleAccordion('US-05')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-05</strong></td>
+                <td class="col-title">Dokončení změny hesla pomocí tokenu</td>
+                <td class="text-center"><code>3</code></td>
+                <td class="text-center"><code>3</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">5/5 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (2 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-05" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-05">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Uživatel s platným resetovacím odkazem | <strong>Chci:</strong> Zadat nové heslo a jeho potvrzení | <strong>Abych:</strong> Nahradil zapomenuté heslo novým a mohl se přihlásit</p>
+                </div>
+            
+                        
+                <div class="story-bugs">
+                    <h5>🐛 Evidované defekty aplikace (JIRA):</h5>
+                    <ul><li><strong>BR-03:</strong> BR-03: Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password <span class='badge badge-warning'>Defekt</span></li><li><strong>BR-03:</strong> BR-03: Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password <span class='badge badge-warning'>Defekt</span></li></ul>
+                </div>
+            
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (5/5 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-15-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Stránka ověří platnost resetovacího tokenu předaného v odkazu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-14-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Formulář vyžaduje zadání nového hesla a jeho kontrolní potvrzení.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-16-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Heslo musí splňovat bezpečnostní pravidla a obě zadaná pole se musí shodovat.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-14-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšném uložení nového hesla systém zobrazí potvrzovací zprávu a nabídne přímý odkaz pro přihlášení novými údaji.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-15-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">V případě neplatného nebo vypršeného odkazu je uživatel informován o neplatnosti požadavku.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (3/3):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-14-AUTH</code></span>
+                        <span class="tc-title"><strong>Úspěšná změna hesla pomocí platného tokenu</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-03)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:63</code> &rarr; <code>test_tc14_auth_successful_password_reset_with_valid_token</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2, AK-4</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-15-AUTH</code></span>
+                        <span class="tc-title"><strong>Pokus o změnu hesla s neplatným nebo expirovaným tokenem</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:83</code> &rarr; <code>test_tc15_auth_password_reset_invalid_or_expired_token</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-5</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-16-AUTH</code></span>
+                        <span class="tc-title"><strong>Změna hesla s neshodným potvrzením</strong></span>
+                        <span class="tc-type">(Validační / P3)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-03)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:115</code> &rarr; <code>test_tc16_auth_password_reset_short_password</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="AUTH" data-status="xfail" onclick="toggleAccordion('US-06')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-06</strong></td>
+                <td class="col-title">Ověření e-mailové adresy (Email Verification)</td>
+                <td class="text-center"><code>3</code></td>
+                <td class="text-center"><code>3</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">5/5 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (3 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-06" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-06">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Registrovaný uživatel nebo provozovatel portálu | <strong>Chci:</strong> Aby bylo vlastnictví zadané e-mailové adresy ověřováno potvrzovacím odkazem s možností vyžádat si odkaz znovu | <strong>Abych:</strong> Měl jistotu, že uživatelský účet je svázán se skutečnou a ověřenou e-mailovou schránkou</p>
+                </div>
+            
+                        
+                <div class="story-bugs">
+                    <h5>🐛 Evidované defekty aplikace (JIRA):</h5>
+                    <ul><li><strong>BR-05:</strong> BR-05: Stránka /overeni-emailu vrací prázdný kontejner bez rozhraní pro potvrzení ověření e-mailu <span class='badge badge-warning'>Defekt</span></li><li><strong>BR-05:</strong> BR-05: Stránka /overeni-emailu vrací prázdný kontejner bez chybového hlášení pro neplatný token <span class='badge badge-warning'>Defekt</span></li><li><strong>BR-05:</strong> BR-05: Stránka /email/verify vrací prázdný kontejner bez UI pro znovuzaslání ověřovacího e-mailu <span class='badge badge-warning'>Defekt</span></li></ul>
+                </div>
+            
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (5/5 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-17-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po registraci systém vygeneruje a odešle na uživatelův e-mail časově omezený, bezpečně podepsaný ověřovací odkaz.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-17-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Otevření platného odkazu označí e-mail uživatele za ověřený a uživatel je informován o úspěšném dokončení ověření.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-18-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Pokus o ověření s pozměněným nebo vypršeným odkazem je systémem zamítnut.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-19-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Uživatel má možnost z aplikace požádat o opětovné zaslání nového ověřovacího odkazu, pokud původní neobdržel nebo expiroval.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-19-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Znovuzaslání ověřovacího e-mailu je chráněno časovým limitem proti zahlcení.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (3/3):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-17-AUTH</code></span>
+                        <span class="tc-title"><strong>Úspěšné ověření e-mailu přes platný odkaz</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-05)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:135</code> &rarr; <code>test_tc17_auth_email_verification_success</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-18-AUTH</code></span>
+                        <span class="tc-title"><strong>Pokus o ověření e-mailu s neplatným odkazem</strong></span>
+                        <span class="tc-type">(Negativní / P2)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-05)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:149</code> &rarr; <code>test_tc18_auth_email_verification_invalid_link</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-19-AUTH</code></span>
+                        <span class="tc-title"><strong>Znovuzaslání ověřovacího e-mailu a časový limit</strong></span>
+                        <span class="tc-type">(Funkční / P3)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-05)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_password_reset.py:163</code> &rarr; <code>test_tc19_auth_resend_verification_email_rate_limit</code></span>
+                        <span class="tc-aks">Pokrývá: AK-4, AK-5</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="AUTH" data-status="full" onclick="toggleAccordion('US-07')">
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td><strong>US-07</strong></td>
+                <td class="col-title">Ochrana proti útokům hrubou silou na přihlášení (Rate Limiting)</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">4/4 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-07" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-07">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Správce systému | <strong>Chci:</strong> Aby systém omezoval počet opakovaných neúspěšných pokusů o přihlášení | <strong>Abych:</strong> Zabránil slovníkovým útokům a pokusům o neoprávněné prolomení hesel</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (4/4 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-20-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Systém sleduje počet po sobě jdoucích neúspěšných pokusů o přihlášení pro daný e-mail a přístupové místo.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-20-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Uživatel má povolen limit maximálně 5 neúspěšných pokusů.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-20-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Při překročení tohoto limitu dojde k dočasné blokaci dalších pokusů a systém uživateli oznámí počet sekund, po které musí vyčkat.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-21-AUTH</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšném přihlášení se počítadlo neúspěšných pokusů automaticky vynuluje.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-20-AUTH</code></span>
+                        <span class="tc-title"><strong>Dočasná blokace po 5 neúspěšných pokusech o přihlášení</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_login.py:172</code> &rarr; <code>test_tc20_auth_temporary_lockout_after_five_failed_logins</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-3</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-21-AUTH</code></span>
+                        <span class="tc-title"><strong>Vynulování počítadla neúspěchů po úspěšném přihlášení</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_login.py:207</code> &rarr; <code>test_tc21_auth_reset_failed_login_counter_on_success</code></span>
+                        <span class="tc-aks">Pokrývá: AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="CRS" data-status="full" onclick="toggleAccordion('US-08')">
+                <td><span class="module-tag mod-crs">CRS</span></td>
+                <td><strong>US-08</strong></td>
+                <td class="col-title">Prohlížení katalogu kurzů</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">5/5 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-08" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-08">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Návštěvník nebo registrovaný student | <strong>Chci:</strong> Zobrazit přehledný katalog všech nabízených kurzů | <strong>Abych:</strong> Měl přehled o dostupných vzdělávacích tématech, cenách a kapacitách</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (5/5 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-22-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Stránka katalogu přehledně zobrazuje seznam všech aktuálně nabízených kurzů.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-23-CRS</code></span>
+                    </div>
+                    <div class="crit-text">U každého kurzu je zobrazen název, stručný popis, maximální kapacita účastníků a cena zaokrouhlená na celé koruny.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-23-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Má-li kurz nahrán grafický náhled, zobrazí se u karty kurzu; v opačném případě se zobrazí neutrální výchozí obrázek.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-23-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Z každé karty kurzu je možné přejít na podrobný detail vybraného kurzu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-22-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Pokud si katalog prohlíží nepřihlášený návštěvník, pod nabídkou kurzů se zobrazí výzva k registraci s přímým odkazem.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-22-CRS</code></span>
+                        <span class="tc-title"><strong>Zobrazení katalogu kurzů pro nepřihlášeného návštěvníka</strong></span>
+                        <span class="tc-type">(Smoke / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_courses.py:26</code> &rarr; <code>test_tc22_crs_catalog_display_for_guest</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-5</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-23-CRS</code></span>
+                        <span class="tc-title"><strong>Ověření zobrazení atributů kurzu (cena, kapacita, náhled)</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_courses.py:40</code> &rarr; <code>test_tc23_crs_course_card_attributes</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2, AK-3, AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="CRS" data-status="full" onclick="toggleAccordion('US-09')">
+                <td><span class="module-tag mod-crs">CRS</span></td>
+                <td><strong>US-09</strong></td>
+                <td class="col-title">Zobrazení detailu kurzu a vypsaných termínů</td>
+                <td class="text-center"><code>1</code></td>
+                <td class="text-center"><code>1</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">4/4 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-09" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-09">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Zájemce o konkrétní kurz | <strong>Chci:</strong> Zobrazit podrobné informace o vybraném kurzu a seznam všech jeho vypsaných termínů | <strong>Abych:</strong> Zjistil přesná data konání a aktuální obsazenost jednotlivých běhů</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (4/4 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-24-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Detail kurzu zobrazuje kompletní název kurzu, podrobný obsahový popis, náhledový obrázek a cenu kurzu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-24-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Stránka obsahuje sekci se seznamem všech vypsaných termínů (běhů) daného kurzu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-24-CRS</code></span>
+                    </div>
+                    <div class="crit-text">U každého termínu je zobrazeno datum zahájení, datum ukončení a aktuální poměr obsazenosti vůči celkové kapacitě (např. *3/12*).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-24-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Nepřihlášeným návštěvníkům se na konci stránky zobrazí výzva k vytvoření účtu.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (1/1):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-24-CRS</code></span>
+                        <span class="tc-title"><strong>Zobrazení detailu kurzu a seznamu vypsaných termínů</strong></span>
+                        <span class="tc-type">(Funkční / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_courses.py:60</code> &rarr; <code>test_tc24_crs_course_detail_and_iterations_display</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-3, AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="CRS" data-status="full" onclick="toggleAccordion('US-10')">
+                <td><span class="module-tag mod-crs">CRS</span></td>
+                <td><strong>US-10</strong></td>
+                <td class="col-title">Vizuální indikace a zamezení zápisu při naplněné kapacitě</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">3/3 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-10" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-10">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Zákazník vybírající si termín kurzu | <strong>Chci:</strong> Mít možnost se přihlásit pouze na termíny, které mají volná místa | <strong>Abych:</strong> Se nepokoušel registrovat na již plně obsazené běhy</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (3/3 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-25-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Tlačítko pro nezávaznou registraci se přihlášenému zákazníkovi zobrazuje pouze u běhů, které mají volnou kapacitu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-25-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Kliknutí na registraci přesměruje zákazníka do objednávkového formuláře daného běhu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-26-CRS</code></span>
+                    </div>
+                    <div class="crit-text">Pokud je kapacita běhu zcela naplněna, možnost registrace se nenabízí a termín je indikován jako plně obsazený.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-25-CRS</code></span>
+                        <span class="tc-title"><strong>Zobrazení tlačítka zápisu u termínu s volnou kapacitou</strong></span>
+                        <span class="tc-type">(Funkční / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_courses.py:85</code> &rarr; <code>test_tc25_crs_enrollment_button_for_available_capacity</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-26-CRS</code></span>
+                        <span class="tc-title"><strong>Zamezení registrace a indikace plně obsazeného běhu</strong></span>
+                        <span class="tc-type">(Hraniční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_courses.py:104</code> &rarr; <code>test_tc26_crs_indication_when_capacity_full_or_unauthenticated</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="ENR" data-status="xfail" onclick="toggleAccordion('US-11')">
+                <td><span class="module-tag mod-enr">ENR</span></td>
+                <td><strong>US-11</strong></td>
+                <td class="col-title">Nezávazná registrace na běh kurzu s validací IČO a telefonu</td>
+                <td class="text-center"><code>4</code></td>
+                <td class="text-center"><code>4</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">7/7 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (1 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-11" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-11">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený zákazník | <strong>Chci:</strong> Dokončit nezávaznou registraci na zvolený termín kurzu zadáním svého IČO a telefonního čísla | <strong>Abych:</strong> Si zarezervoval místo a předal organizátorovi kontaktní a fakturační údaje</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (7/7 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-27-ENR</code>, <code>TC-28-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Registrační formulář obsahuje pole pro IČO, telefonní číslo a potvrzovací tlačítko.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-30-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Telefonní číslo je povinné a musí obsahovat alespoň 9 číslic.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-28-ENR</code>, <code>TC-29-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Pokud uživatel zadá IČO, systém prověří jeho platnost pomocí oficiálního algoritmu kontrolního součtu (8místné číslo s váženým součtem modulo 11).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-29-ENR</code>, <code>TC-30-ENR</code></span>
+                    </div>
+                    <div class="crit-text">V případě neplatného telefonu nebo IČO je uživatel upozorněn chybovou hláškou u daného pole a formulář se neodešle.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-27-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Zápis na kurz je povolen výhradně uživatelům v roli zákazníka.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-27-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Zadané IČO a telefon se automaticky uloží do profilu uživatele a vytvoří se vazba přihlášeného studenta na daný běh kurzu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-7</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-27-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšném zápisu obdrží zákazník potvrzení o registraci a je přesměrován do sekce svých zapsaných kurzů.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (4/4):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-27-ENR</code></span>
+                        <span class="tc-title"><strong>Úspěšný zápis na kurz s platným telefonem a platným IČO</strong></span>
+                        <span class="tc-type">(Smoke / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_enrollment.py:35</code> &rarr; <code>test_tc27_enr_successful_enrollment_with_ico_and_phone</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-5, AK-6, AK-7</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-28-ENR</code></span>
+                        <span class="tc-title"><strong>Úspěšný zápis na kurz bez vyplněného IČO</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (Defekt)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_enrollment.py:72</code> &rarr; <code>test_tc28_enr_successful_enrollment_without_ico</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-3</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-29-ENR</code></span>
+                        <span class="tc-title"><strong>Zápis s neplatným IČO (chyba kontrolního součtu modulo 11)</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_enrollment.py:97</code> &rarr; <code>test_tc29_enr_invalid_ico_validation</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3, AK-4</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-30-ENR</code></span>
+                        <span class="tc-title"><strong>Zápis s neplatným telefonem (méně než 9 číslic)</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_enrollment.py:114</code> &rarr; <code>test_tc30_enr_short_phone_validation</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2, AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="ENR" data-status="full" onclick="toggleAccordion('US-12')">
+                <td><span class="module-tag mod-enr">ENR</span></td>
+                <td><strong>US-12</strong></td>
+                <td class="col-title">Přehled mých zapsaných kurzů</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">8/8 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-12" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-12">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený zákazník | <strong>Chci:</strong> Mít k dispozici přehled všech kurzů a termínů, na které jsem se zapsal | <strong>Abych:</strong> Měl stálou kontrolu nad svými termíny a místem konání výuky</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (8/8 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code>, <code>TC-48-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Sekce *„Moje kurzy“* je přístupná z navigace pouze pro přihlášené zákazníky.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code>, <code>TC-48-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Přehled zobrazuje všechny kurzy, ke kterým má uživatel aktivní zápis.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code></span>
+                    </div>
+                    <div class="crit-text">U každého zapsaného kurzu se zobrazují klíčové organizační informace:</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Název, popis a cena kurzu</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Datum první a poslední lekce</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Den v týdnu a čas konání lekcí</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-7</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Místo konání nebo forma výuky (např. prezenční adresa či online)</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-8</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-31-ENR</code></span>
+                    </div>
+                    <div class="crit-text">Z každého kurzu v přehledu je možné přejít na detail daného kurzu.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-31-ENR</code></span>
+                        <span class="tc-title"><strong>Zobrazení přehledu mých zapsaných kurzů a detailu lekcí</strong></span>
+                        <span class="tc-type">(Funkční / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_enrollment.py:130</code> &rarr; <code>test_tc31_enr_my_courses_overview_display</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-3, AK-4, AK-5, AK-6, AK-7, AK-8</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-48-ENR</code></span>
+                        <span class="tc-title"><strong>Zobrazení sekce Moje kurzy bez aktivních zápisů (Empty State)</strong></span>
+                        <span class="tc-type">(Negativní / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_enrollment.py:176</code> &rarr; <code>test_tc48_enr_empty_state_my_courses_without_enrollments</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="LEC" data-status="xfail" onclick="toggleAccordion('US-13')">
+                <td><span class="module-tag mod-lec">LEC</span></td>
+                <td><strong>US-13</strong></td>
+                <td class="col-title">Vytvoření nového kurzu s kontrolou poměru stran obrázku</td>
+                <td class="text-center"><code>3</code></td>
+                <td class="text-center"><code>3</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">6/6 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (2 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-13" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-13">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený lektor | <strong>Chci:</strong> Zadat do systému nový kurz včetně parametrů a náhledového obrázku | <strong>Abych:</strong> Zveřejnil novou vzdělávací nabídku v katalogu pro studenty</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (6/6 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-32-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Možnost vytvořit nový kurz je dostupná výhradně uživatelům s rolí lektora.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-32-LEC</code>, <code>TC-34-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Formulář vyžaduje vyplnění názvu kurzu, popisu, celkové kapacity a ceny.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-34-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Kapacita musí být kladné celé číslo a cena číselná hodnota.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-32-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Formulář umožňuje nahrát grafický soubor náhledu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-33-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Systém kontroluje poměr stran nahrávaného obrázku (širokoúhlý formát přibližně 16:9 s povolenou odchylkou do 5 %): nevyhovující obrázek je odmítnut s výzvou k výběru správného formátu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-32-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšném uložení je nový kurz zařazen do katalogu a lektor je přesměrován do přehledu kurzů.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (3/3):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-32-LEC</code></span>
+                        <span class="tc-title"><strong>Vytvoření nového kurzu s náhledem s poměrem stran 16:9</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:35</code> &rarr; <code>test_tc32_lec_create_course_with_16_9_aspect_ratio_image</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-4, AK-6</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-33-LEC</code></span>
+                        <span class="tc-title"><strong>Odmítnutí náhledového obrázku s nevyhovujícím poměrem stran</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (Defekt)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:63</code> &rarr; <code>test_tc33_lec_reject_invalid_aspect_ratio_image</code></span>
+                        <span class="tc-aks">Pokrývá: AK-5</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-34-LEC</code></span>
+                        <span class="tc-title"><strong>Validace povinných polí a číselné kapacity/ceny kurzu</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (Defekt)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:87</code> &rarr; <code>test_tc34_lec_validation_required_fields_and_numeric_values</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2, AK-3</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="LEC" data-status="xfail" onclick="toggleAccordion('US-14')">
+                <td><span class="module-tag mod-lec">LEC</span></td>
+                <td><strong>US-14</strong></td>
+                <td class="col-title">Vypsání nového běhu (termínu) kurzu</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">5/5 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (1 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-14" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-14">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený lektor | <strong>Chci:</strong> K existujícímu kurzu otevřít nový termín konání s přesným rozvrhem | <strong>Abych:</strong> Umožnil zájemcům hlásit se na konkrétní termín</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (5/5 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-35-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Volba pro vypsání nového termínu je dostupná pouze lektorům u jednotlivých karet kurzů.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-35-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Formulář vyžaduje zadání data zahájení, data ukončení, dne konání v týdnu, času lekce a místa či formy výuky.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-36-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Všechna pole termínu jsou povinná.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-35-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Nový termín se automaticky přiřadí k danému kurzu a propojí se s lektorem, který jej vypsal.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-35-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Po uložení je lektor přesměrován na detail kurzu, kde je nový termín ihned viditelný.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-35-LEC</code></span>
+                        <span class="tc-title"><strong>Úspěšné vypsání nového termínu kurzu lektorem</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:105</code> &rarr; <code>test_tc35_lec_create_course_iteration_by_lecturer</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-4, AK-5</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-36-LEC</code></span>
+                        <span class="tc-title"><strong>Validace povinných polí při vypsání termínu</strong></span>
+                        <span class="tc-type">(Validační / P3)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (Defekt)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:136</code> &rarr; <code>test_tc36_lec_validation_iteration_required_fields</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="LEC" data-status="xfail" onclick="toggleAccordion('US-15')">
+                <td><span class="module-tag mod-lec">LEC</span></td>
+                <td><strong>US-15</strong></td>
+                <td class="col-title">Zobrazení seznamu přihlášených účastníků pro lektora</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">4/4 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (1 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-15" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-15">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený lektor | <strong>Chci:</strong> Zobrazit přehled všech studentů přihlášených na konkrétní běh kurzu | <strong>Abych:</strong> Měl k dispozici jejich kontaktní a fakturační údaje pro organizaci docházky a komunikaci</p>
+                </div>
+            
+                        
+                <div class="story-bugs">
+                    <h5>🐛 Evidované defekty aplikace (JIRA):</h5>
+                    <ul><li><strong>BR-01:</strong> BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník <span class='badge badge-warning'>Defekt</span></li></ul>
+                </div>
+            
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (4/4 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-37-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Možnost zobrazit účastníky běhu je dostupná pouze přihlášeným lektorům z detailu kurzu.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-37-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Seznam přehledně v tabulce zobrazuje: jméno a příjmení, e-mail, telefon a IČO každého zapsaného studenta.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-37-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Pokud student IČO nevyplnil, zobrazí se zástupná hodnota *„Neuvedeno“*.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-38-LEC</code></span>
+                    </div>
+                    <div class="crit-text">Běžní zákazníci ani nepřihlášení návštěvníci nemají k seznamu účastníků přístup.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-37-LEC</code></span>
+                        <span class="tc-title"><strong>Zobrazení tabulky přihlášených účastníků pro lektora</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:152</code> &rarr; <code>test_tc37_lec_lecturer_interface_and_navigation</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-3</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-38-LEC</code></span>
+                        <span class="tc-title"><strong>Zamezení přístupu k účastníkům pro zákazníka</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P1)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-01)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_lecturer.py:201</code> &rarr; <code>test_tc38_lec_customer_cannot_access_lecturer_create_course</code></span>
+                        <span class="tc-aks">Pokrývá: AK-4</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="PRF" data-status="full" onclick="toggleAccordion('US-16')">
+                <td><span class="module-tag mod-prf">PRF</span></td>
+                <td><strong>US-16</strong></td>
+                <td class="col-title">Domovská uvítací nástěnka po přihlášení</td>
+                <td class="text-center"><code>1</code></td>
+                <td class="text-center"><code>1</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">2/2 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-16" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-16">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený uživatel | <strong>Chci:</strong> Být po úspěšném přihlášení přesměrován na domovskou nástěnku | <strong>Abych:</strong> Obdržel personalizované uvítání potvrzující mou identitu v systému</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (2/2 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-39-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Po přihlášení se uživateli zobrazí uvítací zpráva obsahující jeho jméno.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-39-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Domovská stránka je přihlášenému uživateli trvale dostupná z horní navigace pod volbou *„Domů“*.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (1/1):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-39-PRF</code></span>
+                        <span class="tc-title"><strong>Zobrazení personalizovaného uvítání na domovské nástěnce</strong></span>
+                        <span class="tc-type">(Smoke / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_profile.py:29</code> &rarr; <code>test_tc39_prf_personalized_welcome_dashboard</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="PRF" data-status="full" onclick="toggleAccordion('US-17')">
+                <td><span class="module-tag mod-prf">PRF</span></td>
+                <td><strong>US-17</strong></td>
+                <td class="col-title">Zobrazení a aktualizace uživatelského profilu</td>
+                <td class="text-center"><code>3</code></td>
+                <td class="text-center"><code>3</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">6/6 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-17" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-17">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Přihlášený uživatel | <strong>Chci:</strong> Prohlížet a upravovat své osobní, kontaktní a fakturační údaje | <strong>Abych:</strong> Udržoval své kontakty a firemní údaje aktuální</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (6/6 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-40-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Formulář profilu předvyplní stávající data uživatele: jméno, e-mail, IČO a telefon.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-42-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Jméno a e-mail jsou povinná pole; e-mail musí mít platný formát a nesmí být obsazen jiným uživatelem.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-40-PRF</code></span>
+                    </div>
+                    <div class="crit-text">IČO a telefon slouží jako doplňkové fakturační údaje.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-41-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Pokud je IČO vyplněno, systém kontroluje jeho formální platnost (kontrolní součet).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-41-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Pokud je telefon vyplněn, ověřuje se platný formát telefonního čísla.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-40-PRF</code></span>
+                    </div>
+                    <div class="crit-text">Po úspěšném uložení formuláře je uživatel informován o provedené aktualizaci a přesměrován na domovskou stránku.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (3/3):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-40-PRF</code></span>
+                        <span class="tc-title"><strong>Úspěšná aktualizace údajů profilu (jméno, IČO, telefon)</strong></span>
+                        <span class="tc-type">(Funkční / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_profile.py:38</code> &rarr; <code>test_tc40_prf_display_and_update_profile</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-3, AK-6</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-41-PRF</code></span>
+                        <span class="tc-title"><strong>Validace formátu IČO a telefonu v profilu</strong></span>
+                        <span class="tc-type">(Validační / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_profile.py:65</code> &rarr; <code>test_tc41_prf_ico_and_phone_validation_in_profile</code></span>
+                        <span class="tc-aks">Pokrývá: AK-4, AK-5</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-42-PRF</code></span>
+                        <span class="tc-title"><strong>Pokus o změnu e-mailu na již obsazenou adresu</strong></span>
+                        <span class="tc-type">(Negativní / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_profile.py:77</code> &rarr; <code>test_tc42_prf_duplicate_email_change_rejected</code></span>
+                        <span class="tc-aks">Pokrývá: AK-2</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="SEC" data-status="xfail" onclick="toggleAccordion('US-18')">
+                <td><span class="module-tag mod-sec">SEC</span></td>
+                <td><strong>US-18</strong></td>
+                <td class="col-title">Řízení přístupu na základě rolí (RBAC a autorizace API)</td>
+                <td class="text-center"><code>3</code></td>
+                <td class="text-center"><code>3</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">7/7 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-warning">Pokryto (1 defekt)</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-18" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-18">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Systémový administrátor a uživatel dbající na bezpečnost | <strong>Chci:</strong> Aby veškeré privátní operace a data byly striktně chráněny podle role přihlášeného uživatele | <strong>Abych:</strong> Zabránil neoprávněné manipulaci s daty a přístupu k citlivým funkcím</p>
+                </div>
+            
+                        
+                <div class="story-bugs">
+                    <h5>🐛 Evidované defekty aplikace (JIRA):</h5>
+                    <ul><li><strong>BR-01:</strong> BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník <span class='badge badge-warning'>Defekt</span></li></ul>
+                </div>
+            
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (7/7 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-43-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Veřejně přístupný bez přihlášení je pouze katalog kurzů, základní detail kurzu a formuláře přihlášení/registrace.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-43-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Veškeré privátní operace (zápis na termín, zobrazení mých kurzů, úprava profilu, správa kurzů) vyžadují aktivní přihlášení uživatele; neautentizovaný přístup je odmítnut.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-44-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Lektorské akce (tvorba kurzu, vypisování termínů, zobrazení účastníků) jsou povoleny výhradně uživatelům s rolí lektora.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-4</strong> <span class="pill pill-warning">⚠️ XFAIL</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-44-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Běžný zákazník se nemůže dostat k lektorským operacím (požadavek je odmítnut s chybou oprávnění).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-5</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-45-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Lektor se nemůže zapisovat na běhy kurzů (zápis je vyhrazen zákazníkům).</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-6</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-43-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Nepřihlášený uživatel pokoušející se přistoupit na privátní stránky (profil, moje kurzy) je automaticky přesměrován na katalog kurzů.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-7</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-43-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Servisní a údržbové funkce systému (migrace, čištění cache) nesmí být volně vystaveny neautorizovaným návštěvníkům v produkčním prostředí.</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (3/3):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-43-SEC</code></span>
+                        <span class="tc-title"><strong>Přesměrování nepřihlášeného z privátních stránek na katalog</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_security.py:29</code> &rarr; <code>test_tc43_sec_unauthenticated_private_url_access_blocked</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2, AK-6, AK-7</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-44-SEC</code></span>
+                        <span class="tc-title"><strong>Zákaz lektorských operací pro uživatele v roli zákazníka</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P1)</span>
+                        <span class="pill pill-warning">⚠️ XFAIL (BR-01)</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_security.py:48</code> &rarr; <code>test_tc44_sec_customer_cannot_access_lecturer_operations</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3, AK-4</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-45-SEC</code></span>
+                        <span class="tc-title"><strong>Zákaz zápisu na kurz pro uživatele v roli lektora</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_security.py:60</code> &rarr; <code>test_tc45_sec_lecturer_cannot_enroll_as_customer</code></span>
+                        <span class="tc-aks">Pokrývá: AK-5</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+
+            <tr class="story-row" data-module="SEC" data-status="full" onclick="toggleAccordion('US-19')">
+                <td><span class="module-tag mod-sec">SEC</span></td>
+                <td><strong>US-19</strong></td>
+                <td class="col-title">Ochrana proti podvržení požadavků (CSRF) a integrita sezení</td>
+                <td class="text-center"><code>2</code></td>
+                <td class="text-center"><code>2</code></td>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100.0%;"></div>
+                        </div>
+                        <span class="crit-label">3/3 (100 %)</span>
+                    </div>
+                </td>
+                <td><span class="badge badge-success">Plně pokryto</span></td>
+                <td class="text-center"><button class="btn-toggle" id="btn-US-19" title="Zobrazit detail">&#9660;</button></td>
+            </tr>
+            <tr class="accordion-content" id="detail-US-19">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        
+                <div class="story-desc">
+                    <p><strong>Jako:</strong> Uživatel aplikace | <strong>Chci:</strong> Aby veškeré formulářové a stavové požadavky byly zabezpečeny proti bezpečnostním hrozbám zneužívajícím otevřené sezení | <strong>Abych:</strong> Byl chráněn před útoky typu Cross-Site Request Forgery (CSRF) ze škodlivých stránek třetích stran</p>
+                </div>
+            
+                        
+                        <div class="detail-grid">
+                            <div class="detail-col">
+                                <h4>🎯 Akceptační kritéria (3/3 pokryto):</h4>
+                                <ul class="crit-list">
+                                    
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-1</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-46-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Veškeré formulářové požadavky odesílané z klientského rozhraní jsou chráněny platným bezpečnostním CSRF tokenem.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-2</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-46-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Požadavky s neplatným nebo chybějícím tokenem jsou serverem neprodleně odmítnuty.</div>
+                </li>
+            
+                <li class="crit-item">
+                    <div class="crit-header">
+                        <strong>AK-3</strong> <span class="pill pill-success">🟢 Pokryto AT</span>
+                        <span class="crit-tcs">Navázané TC: <code>TC-47-SEC</code></span>
+                    </div>
+                    <div class="crit-text">Při každém přihlášení a odhlášení je sezení regenerováno, což zabraňuje únosu sezení (Session Fixation).</div>
+                </li>
+            
+                                </ul>
+                            </div>
+                            <div class="detail-col">
+                                <h4>🧪 Test Casy & Automatizace (2/2):</h4>
+                                <div class="tc-list">
+                                    
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-46-SEC</code></span>
+                        <span class="tc-title"><strong>Ochrana formulářů CSRF tokenem a odmítnutí neplatného požadavku</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P1)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_security.py:72</code> &rarr; <code>test_tc46_sec_csrf_cookie_present_for_stateful_forms</code></span>
+                        <span class="tc-aks">Pokrývá: AK-1, AK-2</span>
+                    </div>
+                </div>
+            
+                <div class="tc-card">
+                    <div class="tc-top">
+                        <span class="tc-id"><code>TC-47-SEC</code></span>
+                        <span class="tc-title"><strong>Regenerace session ID při přihlášení a odhlášení</strong></span>
+                        <span class="tc-type">(Bezpečnostní / P2)</span>
+                        <span class="pill pill-success">🟢 AT Implementován</span>
+                    </div>
+                    <div class="tc-bottom">
+                        <span class="tc-impl">Implementace: <code class='code-loc'>test_security.py:87</code> &rarr; <code>test_tc47_sec_session_regeneration_on_login_and_logout</code></span>
+                        <span class="tc-aks">Pokrývá: AK-3</span>
+                    </div>
+                </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            Zdroj: <code>docs/požadavky_ust_podle_src.md</code> &bull; <code>docs/TEST_CASES.md</code> &bull; <code>tests/</code> &bull; <code>docs/JIRA_BUG_REPORTS.md</code>
+        </footer>
+    </div>
+
+    <script>
+        let currentStatusFilter = 'all';
+
+        function toggleAccordion(usId) {
+            const detailRow = document.getElementById('detail-' + usId);
+            const btn = document.getElementById('btn-' + usId);
+            if (!detailRow) return;
+
+            const isOpen = detailRow.classList.contains('show');
+            if (isOpen) {
+                detailRow.classList.remove('show');
+                if (btn) btn.classList.remove('open');
+            } else {
+                detailRow.classList.add('show');
+                if (btn) btn.classList.add('open');
+            }
+        }
+
+        function setStatusFilter(status, btnElement) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.filter-group .filter-btn').forEach(btn => btn.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+            const rows = document.querySelectorAll('.story-row');
+
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                const usId = row.querySelector('td:nth-child(2)').innerText.toLowerCase();
+                const title = row.querySelector('.col-title').innerText.toLowerCase();
+                const module = row.getAttribute('data-module').toLowerCase();
+                const detailRow = document.getElementById('detail-' + usId.toUpperCase());
+
+                let matchesStatus = (currentStatusFilter === 'all') || 
+                                    (currentStatusFilter === 'full' && status === 'full') ||
+                                    (currentStatusFilter === 'xfail' && status === 'xfail') ||
+                                    (currentStatusFilter === 'partial' && status === 'partial') ||
+                                    (currentStatusFilter === 'uncovered' && status === 'uncovered');
+
+                let matchesQuery = !query || usId.includes(query) || title.includes(query) || module.includes(query);
+
+                if (matchesStatus && matchesQuery) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                    if (detailRow) detailRow.classList.remove('show');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

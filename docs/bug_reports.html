@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centrální registr chyb (JIRA Bug Reports)</title>
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+            --warning: #d97706;
+            --warning-bg: #fef3c7;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --amber: #ea580c;
+            --amber-bg: #ffedd5;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            padding: 30px 20px;
+            line-height: 1.5;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        header { margin-bottom: 28px; }
+        h1 { font-size: 26px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .subtitle { color: var(--text-muted); font-size: 14px; }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .kpi-title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+        .kpi-value { font-size: 28px; font-weight: 700; color: var(--text-main); margin-top: 4px; }
+        .kpi-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Filter Toolbar */
+        .toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .filter-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-right: 4px; text-transform: uppercase; }
+        .filter-btn {
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            color: #475569;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .filter-btn:hover { background: #e2e8f0; }
+        .filter-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .search-box {
+            padding: 7px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            width: 280px;
+            outline: none;
+        }
+        .search-box:focus { border-color: var(--primary); }
+
+        /* Table */
+        .table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        tr.story-row { cursor: pointer; transition: background 0.1s ease; }
+        tr.story-row:hover { background: #f1f5f9; }
+        .text-center { text-align: center; }
+        .col-title { font-weight: 500; max-width: 400px; }
+
+        /* Badges & Tags */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-success { background: var(--success-bg); color: var(--success); }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); }
+        .badge-amber { background: var(--amber-bg); color: var(--amber); }
+        .badge-muted { background: #f1f5f9; color: var(--text-muted); }
+
+        .module-tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #334155;
+            white-space: nowrap;
+        }
+        .mod-auth { background: #e0e7ff; color: #3730a3; }
+        .mod-crs { background: #dbeafe; color: #1e40af; }
+        .mod-enr { background: #ccfbf1; color: #115e59; }
+        .mod-lec { background: #fef3c7; color: #92400e; }
+        .mod-prf { background: #f3e8ff; color: #6b21a8; }
+        .mod-sec { background: #fee2e2; color: #991b1b; }
+
+        .btn-toggle {
+            background: none;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+        .btn-toggle.open { transform: rotate(180deg); color: var(--primary); }
+
+        /* Accordion Detail */
+        tr.accordion-content { display: none; background: #fafafa; }
+        tr.accordion-content.show { display: table-row; }
+        .accordion-inner { padding: 20px 24px; }
+        .detail-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-id-label { font-size: 15px; font-weight: 700; color: var(--text-main); }
+        .detail-title-group { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .evidence-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .evidence-card {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 340px;
+            padding: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-decoration: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .evidence-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+            text-decoration: none !important;
+        }
+        .evidence-thumb {
+            width: 100%;
+            max-height: 210px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: block;
+        }
+        .inline-thumb {
+            max-width: 340px;
+            max-height: 210px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-top: 6px;
+            display: block;
+        }
+        .evidence-caption {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            word-break: break-all;
+        }
+        .btn-copy {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+        .btn-copy:hover { opacity: 0.9; }
+        .btn-copy.copied { background: var(--success); }
+        .hidden-raw { position: absolute; left: -9999px; opacity: 0; }
+
+        .detail-section {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+        .detail-section h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #475569;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+        .sec-expected { border-left: 4px solid var(--success); }
+        .sec-actual { border-left: 4px solid var(--danger); }
+        .sec-impact { border-left: 4px solid var(--warning); }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        .sec-body p { margin-bottom: 8px; font-size: 13.5px; color: #334155; }
+        .sec-body p:last-child { margin-bottom: 0; }
+        .md-list { padding-left: 20px; margin-bottom: 8px; font-size: 13.5px; color: #334155; }
+        .md-list li { margin-bottom: 4px; }
+        .md-list li.sub-item { margin-left: 18px; list-style-type: circle; }
+        .sec-body code, .meta-val code {
+            background: #f1f5f9;
+            color: #0f172a;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+        }
+        .sec-body a, .meta-val a { color: var(--primary); text-decoration: none; }
+        .sec-body a:hover, .meta-val a:hover { text-decoration: underline; }
+
+        .code-block {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 6px;
+            line-height: 1.45;
+        }
+        .code-block code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+        .meta-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .meta-table td { padding: 6px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        .meta-table tr:last-child td { border-bottom: none; }
+        .meta-key { width: 210px; font-weight: 600; color: #475569; }
+        .meta-val { color: #1e293b; }
+
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 32px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐞 Centrální registr chyb (JIRA Bug Reports)</h1>
+            <p class="subtitle">Přehled evidovaných defektů aplikace testovani.kitner.cz | Zdroj: <code>docs/JIRA_BUG_REPORTS.md</code> | Vygenerováno: 24. 11. 2026 13:22</p>
+        </header>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">Celkem defektů</div>
+                <div class="kpi-value">5</div>
+                <div class="kpi-sub">Otevřeno: 5 | V řešení: 0 | Vyřešeno: 0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Critical &amp; High</div>
+                <div class="kpi-value" style="color: var(--danger);">3</div>
+                <div class="kpi-sub">Critical: 1 | High: 2 | Medium: 2 | Low: 0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Zasažené moduly</div>
+                <div class="kpi-value" style="color: var(--primary);">4</div>
+                <div class="kpi-sub">AUTH, ENR, LEC, SEC</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Dotčené User Stories</div>
+                <div class="kpi-value" style="color: var(--warning);">6</div>
+                <div class="kpi-sub">US-04, US-05, US-06, US-11, US-13, US-18</div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-row">
+                <div class="filter-group">
+                    <span class="filter-label">Stav:</span>
+                    <button class="filter-btn active" data-filter-type="status" data-value="all">Vše</button>
+                    <button class="filter-btn" data-filter-type="status" data-value="open">🔴 Otevřeno</button>
+                    <button class="filter-btn" data-filter-type="status" data-value="in_progress">🟡 V řešení</button>
+                    <button class="filter-btn" data-filter-type="status" data-value="closed">🟢 Vyřešeno</button>
+                </div>
+                <input type="text" id="searchInput" class="search-box" placeholder="Hledat BR-XX, název, US-XX, text..." oninput="applyFilters()">
+            </div>
+            <div class="toolbar-row">
+                <div class="filter-group">
+                    <span class="filter-label">Závažnost:</span>
+                    <button class="filter-btn active" data-filter-type="severity" data-value="all">Vše</button>
+                    <button class="filter-btn" data-filter-type="severity" data-value="critical">Critical</button>
+                    <button class="filter-btn" data-filter-type="severity" data-value="high">High</button>
+                    <button class="filter-btn" data-filter-type="severity" data-value="medium">Medium</button>
+                    <button class="filter-btn" data-filter-type="severity" data-value="low">Low</button>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Modul:</span>
+                    <button class="filter-btn active" data-filter-type="module" data-value="all">Vše</button>
+                    <button class="filter-btn" data-filter-type="module" data-value="AUTH">AUTH</button><button class="filter-btn" data-filter-type="module" data-value="ENR">ENR</button><button class="filter-btn" data-filter-type="module" data-value="LEC">LEC</button><button class="filter-btn" data-filter-type="module" data-value="SEC">SEC</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 90px;">ID</th>
+                        <th style="width: 120px;">Modul</th>
+                        <th>Název incidentu</th>
+                        <th class="text-center" style="width: 110px;">Závažnost</th>
+                        <th class="text-center" style="width: 100px;">Priorita</th>
+                        <th style="width: 130px;">Vázaná US</th>
+                        <th class="text-center" style="width: 130px;">Stav</th>
+                        <th class="text-center" style="width: 60px;">Detail</th>
+                    </tr>
+                </thead>
+                <tbody id="bugsTableBody">
+                    
+            <tr class="story-row"
+                data-status="open"
+                data-severity="critical"
+                data-module="SEC"
+                data-search="br-01 sec / rbac chybějící ochrana url `/courses/create` pro roli zákazník critical high us-18, us-13 ### 🐞 br-01 [rbac]: chybějící ochrana url /courses/create – formulář pro vytvoření kurzu je přístupný pro roli zákazník
+
+#### jira ticket metadata
+* **project:** demo login &amp; courses portal (`dlcp`)
+* **issue type:** 🐞 bug / defect
+* **summary (název):** `[rbac/security] chybějící ochrana url /courses/create – formulář pro vytvoření kurzu je přístupný pro roli zákazník`
+* **komponenta:** frontend / routing / autorizace (rbac)
+* **závažnost (severity):** critical (bezpečnostní zranitelnost – broken access control dle owasp top 10 a01)
+* **priorita (priority):** high (kritické bezpečnostní rizik"
+                onclick="toggleDetail('detail-0', this)">
+                <td><strong>BR-01</strong></td>
+                <td><span class="module-tag mod-sec">SEC / RBAC</span></td>
+                <td class="col-title">Chybějící ochrana URL `/courses/create` pro roli Zákazník</td>
+                <td class="text-center"><span class="badge badge-danger">Critical</span></td>
+                <td class="text-center"><span class="badge badge-amber">High</span></td>
+                <td>US-18, US-13</td>
+                <td class="text-center"><span class="badge badge-danger">🔴 Otevřeno</span></td>
+                <td class="text-center"><button class="btn-toggle" aria-label="Zobrazit detail">▼</button></td>
+            </tr>
+            <tr id="detail-0" class="accordion-content">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        <div class="detail-actions">
+                            <div class="detail-title-group">
+                                <span class="detail-id-label">📌 Detail hlášení BR-01</span>
+                                <span class="badge badge-danger" title="Ověření v prohlížeči">🌐 Reprodukováno (24. 11. 2026)</span>
+                            </div>
+                            <button type="button" class="btn-copy" onclick="copyJiraMarkdown(event, 'raw-0', this)">
+                                📋 Kopírovat pro JIRA
+                            </button>
+                            <textarea id="raw-0" class="hidden-raw" readonly>### 🐞 BR-01 [RBAC]: Chybějící ochrana URL /courses/create – formulář pro vytvoření kurzu je přístupný pro roli Zákazník
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login &amp; Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[RBAC/Security] Chybějící ochrana URL /courses/create – formulář pro vytvoření kurzu je přístupný pro roli Zákazník`
+* **Komponenta:** Frontend / Routing / Autorizace (RBAC)
+* **Závažnost (Severity):** Critical (Bezpečnostní zranitelnost – Broken Access Control dle OWASP Top 10 A01)
+* **Priorita (Priority):** High (Kritické bezpečnostní riziko neoprávněného obcházení přístupových práv)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:** 
+  - [`US-18: Řízení přístupu na základě rolí (RBAC)`](požadavky_ust_podle_src.md#us-18-řízení-přístupu-na-základě-rolí-rbac)
+  - [`US-13: Vytvoření nového kurzu lektorem`](požadavky_ust_podle_src.md#us-13-vytvoření-nového-kurzu-lektorem)
+* **Související Test Casy:** 
+  - `TC-38-LEC` (v [`tests/lecturer/test_lecturer.py`](../tests/lecturer/test_lecturer.py))
+  - `TC-44-SEC` (v [`tests/security/test_security.py`](../tests/security/test_security.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 19. 10. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
+
+---
+
+#### 📝 Popis problému (Description)
+Aplikace na klientské straně (Single Page Application router) neprovádí kontrolu uživatelské role při přímém přechodu na URL adresu pro vytváření nových kurzů (`/courses/create`). 
+
+Běžný přihlášený uživatel s klientskou rolí **Zákazník (Customer)** tak po manuálním zadání URL adresy do prohlížeče získá plný přístup k formuláři pro tvorbu a editaci kurzů (`course_form`), ačkoliv má být tato funkcionalita striktně vyhrazena roli **Lektor (Lector)** nebo administrátorům.
+
+---
+
+#### ⚙️ Předpoklady (Preconditions)
+1. V systému existuje aktivní uživatelský účet s rolí **Zákazník (Customer)**:
+   - **E-mail:** `tester@kitner.cz`
+   - **Heslo:** `TajneHeslo123`
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Otevři v prohlížeči přihlašovací formulář: `http://testovani.kitner.cz/login`.
+2. Přihlas se pomocí zákaznického účtu (`tester@kitner.cz` / `TajneHeslo123`).
+3. Po úspěšném přihlášení a přesměrování zadej do adresního řádku prohlížeče přímo chráněnou URL:  
+   👉 `http://testovani.kitner.cz/courses/create`
+4. Stiskni klávesu `Enter` a zkontroluj zobrazený obsah stránky.
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Klientský router i backend ověří oprávnění přihlášeného uživatele a detekují roli **Zákazník**.
+* Přístup k lektorskému formuláři je okamžitě zablokován:
+  - Uživatel je **přesměrován** zpět na veřejný katalog kurzů `/courses` (či nástěnku `/home`) s varovnou zprávou o nedostatečných právech, **NEBO**
+  - Je mu zobrazena standardní chybová stránka **`403 Forbidden`** (*„K této akci nemáte dostatečná oprávnění“*).
+* Formulářový prvek `&lt;form data-testid=&quot;course_form&quot;&gt;` se zákazníkovi **v žádném případě nesmí vykreslit**.
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Aplikace bez jakékoliv autorizační kontroly či přesměrování kompletně vykreslí editační formulář kurzu (`&lt;form data-testid=&quot;course_form&quot;&gt;`).
+* Zákazníkovi jsou plně přístupná pole pro zadání názvu kurzu, popisu, kapacity účastníků, ceny a nahrání náhledového obrázku včetně odesílacího tlačítka.
+
+---
+
+#### ⚠️ Bezpečnostní a byznysový dopad (Security &amp; Business Impact)
+* **Porušení RBAC a principu nejmenších privilegií (Principle of Least Privilege):** Uživatel získává neoprávněný přístup k modulům správy obsahu jiné role.
+* **Klasifikace zranitelnosti:** **OWASP Top 10:2021 – A01 (Broken Access Control)** – fatální absence autorizačních filtrů na chráněných trasách.
+* **Integrita dat:** Zákazníci mohou potenciálně zanést do veřejného katalogu neautorizované či podvodné kurzy.
+
+---
+
+#### 💻 Technický důkaz a vizuální záznamy (Failure Log &amp; Visual Evidence)
+* **Výstup z běhu testů:** `tests/lecturer/test_lecturer.py::TestLecturerCourseManagement::test_tc38_lec_customer_cannot_access_lecturer_create_course` a `tests/security/test_security.py::TestSecurityAndAuthorization::test_tc44_sec_customer_cannot_access_lecturer_operations`
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-01_20261124_1318.png`
+* **Chybový výpis z Playwrightu (AssertionError &amp; Call Log):**
+
+```text
+&gt; expect(create_course_page.form).not_to_be_visible()
+E AssertionError: Locator expected not to be visible
+E Actual value: visible
+E Call log:
+E   - Expect &quot;to_be_visible&quot; with timeout 5000ms
+E   - waiting for get_by_test_id(&quot;course_form&quot;)
+E     14 × locator resolved to &lt;form data-test=&quot;course_form&quot; data-testid=&quot;course_form&quot;&gt;…&lt;/form&gt;
+E        - unexpected value &quot;visible&quot;
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+1. **Frontend (Vue / SPA router):**  
+   Přidat navigační strážce (`Navigation Guard` / `beforeEnter`) pro routu `/courses/create`, který ověří `user.role === &#x27;lector&#x27;`. Pokud role neodpovídá, provést přesměrování na `/courses` s chybovou notifikací.
+2. **Backend API:**  
+   Zajistit, aby koncový bod `POST /api/courses` (příp. `POST /courses`) striktně validoval token sezení a při pokusu o uložení uživatelem bez role lektora vrátil HTTP stavový kód `403 Forbidden`.
+
+---
+
+#### 🔄 Záznam o verifikaci opravy (Verification Log)
+* **Datum re-testu:** *(vyplní se po nasazení opravy)*
+* **Verifikoval:** *(jméno testera po re-testu)*
+* **Výsledek re-testu:** *(zatím neproveden)*
+
+---</textarea>
+                        </div>
+                        <div class="detail-section">
+                            <h4>📋 JIRA Ticket Metadata</h4>
+                            <table class='meta-table'><tr><td class='meta-key'>Project</td><td class='meta-val'>Demo Login &amp; Courses Portal (<code>DLCP</code>)</td></tr><tr><td class='meta-key'>Issue Type</td><td class='meta-val'>🐞 Bug / Defect</td></tr><tr><td class='meta-key'>Summary (Název)</td><td class='meta-val'><code>[RBAC/Security] Chybějící ochrana URL /courses/create – formulář pro vytvoření kurzu je přístupný pro roli Zákazník</code></td></tr><tr><td class='meta-key'>Komponenta</td><td class='meta-val'>Frontend / Routing / Autorizace (RBAC)</td></tr><tr><td class='meta-key'>Závažnost (Severity)</td><td class='meta-val'>Critical (Bezpečnostní zranitelnost – Broken Access Control dle OWASP Top 10 A01)</td></tr><tr><td class='meta-key'>Priorita (Priority)</td><td class='meta-val'>High (Kritické bezpečnostní riziko neoprávněného obcházení přístupových práv)</td></tr><tr><td class='meta-key'>Reprodukovatelnost</td><td class='meta-val'>Vždy (100 %)</td></tr><tr><td class='meta-key'>Vázané User Stories</td><td class='meta-val'><ul class="md-list">
+<li>[<code>US-18: Řízení přístupu na základě rolí (RBAC)</code>](požadavky_ust_podle_src.md#us-18-řízení-přístupu-na-základě-rolí-rbac)</li>
+<li>[<code>US-13: Vytvoření nového kurzu lektorem</code>](požadavky_ust_podle_src.md#us-13-vytvoření-nového-kurzu-lektorem)</li>
+</ul></td></tr><tr><td class='meta-key'>Související Test Casy</td><td class='meta-val'><ul class="md-list">
+<li><code>TC-38-LEC</code> (v [<code>tests/lecturer/test_lecturer.py</code>](../tests/lecturer/test_lecturer.py))</li>
+<li><code>TC-44-SEC</code> (v [<code>tests/security/test_security.py</code>](../tests/security/test_security.py))</li>
+</ul></td></tr><tr><td class='meta-key'>Prostředí</td><td class='meta-val'>Testovací prostředí (<code>http://testovani.kitner.cz</code>), Browser: Chromium / Playwright</td></tr><tr><td class='meta-key'>Nahlásil</td><td class='meta-val'>Andrea Wanková</td></tr><tr><td class='meta-key'>Datum nálezu</td><td class='meta-val'>19. 10. 2026</td></tr><tr><td class='meta-key'>Ověření v prohlížeči</td><td class='meta-val'>Reprodukováno (24. 11. 2026)</td></tr></table>
+                        </div>
+                        <div class="sections-grid">
+                            
+                <div class="detail-section">
+                    <h4>📝 Popis problému (Description)</h4>
+                    <div class="sec-body"><p>Aplikace na klientské straně (Single Page Application router) neprovádí kontrolu uživatelské role při přímém přechodu na URL adresu pro vytváření nových kurzů (<code>/courses/create</code>).</p>
+<p>Běžný přihlášený uživatel s klientskou rolí <strong>Zákazník (Customer)</strong> tak po manuálním zadání URL adresy do prohlížeče získá plný přístup k formuláři pro tvorbu a editaci kurzů (<code>course_form</code>), ačkoliv má být tato funkcionalita striktně vyhrazena roli <strong>Lektor (Lector)</strong> nebo administrátorům.</p></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>⚙️ Předpoklady (Preconditions)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>V systému existuje aktivní uživatelský účet s rolí <strong>Zákazník (Customer)</strong>:</li>
+</ol>
+<ul class="md-list">
+<li><strong>E-mail:</strong> <code>tester@kitner.cz</code></li>
+<li><strong>Heslo:</strong> <code>TajneHeslo123</code></li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>👣 Kroky k reprodukci (Steps to Reproduce)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Otevři v prohlížeči přihlašovací formulář: <code>http://testovani.kitner.cz/login</code>.</li>
+<li>Přihlas se pomocí zákaznického účtu (<code>tester@kitner.cz</code> / <code>TajneHeslo123</code>).</li>
+<li>Po úspěšném přihlášení a přesměrování zadej do adresního řádku prohlížeče přímo chráněnou URL:</li>
+</ol>
+<p>👉 <code>http://testovani.kitner.cz/courses/create</code></p>
+<ol class="md-list">
+<li>Stiskni klávesu <code>Enter</code> a zkontroluj zobrazený obsah stránky.</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section sec-expected">
+                    <h4>✅ Očekávané chování (Expected Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Klientský router i backend ověří oprávnění přihlášeného uživatele a detekují roli <strong>Zákazník</strong>.</li>
+<li>Přístup k lektorskému formuláři je okamžitě zablokován:</li>
+<li>Uživatel je <strong>přesměrován</strong> zpět na veřejný katalog kurzů <code>/courses</code> (či nástěnku <code>/home</code>) s varovnou zprávou o nedostatečných právech, <strong>NEBO</strong></li>
+<li>Je mu zobrazena standardní chybová stránka **<code>403 Forbidden</code>** (<em>„K této akci nemáte dostatečná oprávnění“</em>).</li>
+<li>Formulářový prvek <code>&lt;form data-testid=&quot;course_form&quot;&gt;</code> se zákazníkovi <strong>v žádném případě nesmí vykreslit</strong>.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-actual">
+                    <h4>❌ Skutečné chování (Actual Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Aplikace bez jakékoliv autorizační kontroly či přesměrování kompletně vykreslí editační formulář kurzu (<code>&lt;form data-testid=&quot;course_form&quot;&gt;</code>).</li>
+<li>Zákazníkovi jsou plně přístupná pole pro zadání názvu kurzu, popisu, kapacity účastníků, ceny a nahrání náhledového obrázku včetně odesílacího tlačítka.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-impact">
+                    <h4>⚠️ Bezpečnostní a byznysový dopad (Security &amp; Business Impact)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Porušení RBAC a principu nejmenších privilegií (Principle of Least Privilege):</strong> Uživatel získává neoprávněný přístup k modulům správy obsahu jiné role.</li>
+<li><strong>Klasifikace zranitelnosti:</strong> <strong>OWASP Top 10:2021 – A01 (Broken Access Control)</strong> – fatální absence autorizačních filtrů na chráněných trasách.</li>
+<li><strong>Integrita dat:</strong> Zákazníci mohou potenciálně zanést do veřejného katalogu neautorizované či podvodné kurzy.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💻 Technický důkaz a vizuální záznamy (Failure Log &amp; Visual Evidence)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Výstup z běhu testů:</strong> <code>tests/lecturer/test_lecturer.py::TestLecturerCourseManagement::test_tc38_lec_customer_cannot_access_lecturer_create_course</code> a <code>tests/security/test_security.py::TestSecurityAndAuthorization::test_tc44_sec_customer_cannot_access_lecturer_operations</code></li>
+<li><strong>Screenshot z živého ověření:</strong> <code>reports/screenshots/verify_BR-01_20261124_1318.png</code></li>
+<li><strong>Chybový výpis z Playwrightu (AssertionError &amp; Call Log):</strong></li>
+</ul>
+<pre class="code-block"><code>&gt; expect(create_course_page.form).not_to_be_visible()
+E AssertionError: Locator expected not to be visible
+E Actual value: visible
+E Call log:
+E   - Expect &quot;to_be_visible&quot; with timeout 5000ms
+E   - waiting for get_by_test_id(&quot;course_form&quot;)
+E     14 × locator resolved to &lt;form data-test=&quot;course_form&quot; data-testid=&quot;course_form&quot;&gt;…&lt;/form&gt;
+E        - unexpected value &quot;visible&quot;</code></pre><div class="evidence-gallery"><a class="evidence-card" href="../reports/screenshots/verify_BR-01_20261124_1318.png" target="_blank" rel="noopener" title="Otevřít verify_BR-01_20261124_1318.png v novém okně"><img src="../reports/screenshots/verify_BR-01_20261124_1318.png" alt="verify_BR-01_20261124_1318.png" class="evidence-thumb" loading="lazy"><span class="evidence-caption">🖼️ verify_BR-01_20261124_1318.png</span></a></div></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💡 Doporučené řešení pro vývojáře (Fix Recommendation)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li><strong>Frontend (Vue / SPA router):</strong></li>
+</ol>
+<p>Přidat navigační strážce (<code>Navigation Guard</code> / <code>beforeEnter</code>) pro routu <code>/courses/create</code>, který ověří <code>user.role === &#x27;lector&#x27;</code>. Pokud role neodpovídá, provést přesměrování na <code>/courses</code> s chybovou notifikací.</p>
+<ol class="md-list">
+<li><strong>Backend API:</strong></li>
+</ol>
+<p>Zajistit, aby koncový bod <code>POST /api/courses</code> (příp. <code>POST /courses</code>) striktně validoval token sezení a při pokusu o uložení uživatelem bez role lektora vrátil HTTP stavový kód <code>403 Forbidden</code>.</p></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>🔄 Záznam o verifikaci opravy (Verification Log)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Datum re-testu:</strong> <em>(vyplní se po nasazení opravy)</em></li>
+<li><strong>Verifikoval:</strong> <em>(jméno testera po re-testu)</em></li>
+<li><strong>Výsledek re-testu:</strong> <em>(zatím neproveden)</em></li>
+</ul></div>
+                </div>
+                
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr class="story-row"
+                data-status="open"
+                data-severity="medium"
+                data-module="LEC"
+                data-search="br-02 lec chybějící klientská validace formuláře kurzu a přesměrování při chybě api (http 422) medium medium us-13 ### 🐞 br-02 [lec]: chybějící klientská validace formuláře kurzu a přesměrování při chybě api (http 422)
+
+#### jira ticket metadata
+* **project:** demo login &amp; courses portal (`dlcp`)
+* **issue type:** 🐞 bug / defect
+* **summary (název):** `[lec/validace] chybějící klientská validace formuláře pro vytvoření kurzu a neošetření http 422`
+* **komponenta:** frontend / lektor / validace
+* **závažnost (severity):** medium (absence klientské validace povinných polí formuláře a ignorování chybové odpovědi api ze strany spa routeru)
+* **priorita (priority):** medium (běžná validační a funkční vada s exi"
+                onclick="toggleDetail('detail-1', this)">
+                <td><strong>BR-02</strong></td>
+                <td><span class="module-tag mod-lec">LEC</span></td>
+                <td class="col-title">Chybějící klientská validace formuláře kurzu a přesměrování při chybě API (HTTP 422)</td>
+                <td class="text-center"><span class="badge badge-warning">Medium</span></td>
+                <td class="text-center"><span class="badge badge-warning">Medium</span></td>
+                <td>US-13</td>
+                <td class="text-center"><span class="badge badge-danger">🔴 Otevřeno</span></td>
+                <td class="text-center"><button class="btn-toggle" aria-label="Zobrazit detail">▼</button></td>
+            </tr>
+            <tr id="detail-1" class="accordion-content">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        <div class="detail-actions">
+                            <div class="detail-title-group">
+                                <span class="detail-id-label">📌 Detail hlášení BR-02</span>
+                                <span class="badge badge-danger" title="Ověření v prohlížeči">🌐 Reprodukováno (24. 11. 2026)</span>
+                            </div>
+                            <button type="button" class="btn-copy" onclick="copyJiraMarkdown(event, 'raw-1', this)">
+                                📋 Kopírovat pro JIRA
+                            </button>
+                            <textarea id="raw-1" class="hidden-raw" readonly>### 🐞 BR-02 [LEC]: Chybějící klientská validace formuláře kurzu a přesměrování při chybě API (HTTP 422)
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login &amp; Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[LEC/Validace] Chybějící klientská validace formuláře pro vytvoření kurzu a neošetření HTTP 422`
+* **Komponenta:** Frontend / Lektor / Validace
+* **Závažnost (Severity):** Medium (Absence klientské validace povinných polí formuláře a ignorování chybové odpovědi API ze strany SPA routeru)
+* **Priorita (Priority):** Medium (Běžná validační a funkční vada s existujícím workaroundem – správné vyplnění všech polí)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:** 
+  - [`US-13: Vytvoření nového kurzu lektorem`](požadavky_ust_podle_src.md#us-13-vytvoření-nového-kurzu-lektorem)
+* **Související Test Casy:** 
+  - `TC-34-LEC` (v [`tests/lecturer/test_lecturer.py`](../tests/lecturer/test_lecturer.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 28. 10. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
+
+---
+
+#### 📝 Popis problému (Description)
+Při vytváření nového kurzu na stránce `/courses/create` v roli lektora chybí klientská validace povinných polí (název kurzu, popis, kapacita, cena). 
+
+Pokud lektor odešle prázdný formulář kliknutím na tlačítko *„Vytvořit kurz“*, formulář se bez varování odešle na backend (`POST /api/courses`). Backendová služba požadavek správně odmítne s chybovým stavem `HTTP 422 Unprocessable Entity`, avšak klientská aplikace (SPA router) tuto chybu nezachytí, nezobrazí uživateli žádné validační zprávy u prázdných polí a bezpodmínečně provede přesměrování do katalogu kurzů (`/courses/`).
+
+Lektor tak ztrácí kontext, nezíská žádnou zpětnou vazbu o neúspěšném uložení kurzu a formulář je opuštěn.
+
+---
+
+#### ⚙️ Předpoklady (Preconditions)
+1. V systému existuje aktivní účet s rolí **Lektor (Lecturer)**:
+   - **E-mail:** `lector@lector.com`
+   - **Heslo:** `lector@lector.com`
+2. Uživatel je přihlášen a nachází se na formuláři pro vytvoření kurzu:
+   - **URL:** `http://testovani.kitner.cz/courses/create`
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Otevři v prohlížeči přihlašovací formulář: `http://testovani.kitner.cz/login`.
+2. Přihlas se pomocí lektorského účtu (`lector@lector.com` / `lector@lector.com`).
+3. Přejdi na stránku pro vytvoření kurzu: `http://testovani.kitner.cz/courses/create`.
+4. Ponechej všechna vstupní pole (`Název kurzu`, `Popis kurzu`, `Kapacita`, `Cena`) zcela prázdná.
+5. Klikni na odesílací tlačítko *„Vytvořit kurz“* (`data-testid=&quot;registration_link&quot;`).
+6. Sleduj reakci rozhraní a síťové požadavky (DevTools).
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Klientský formulář zachytí neúplné odeslání a zabrání odeslání požadavku na server, **NEBO** při obdržení chybového kódu `HTTP 422` ze serveru zůstane uživatel na formuláři (`/courses/create`).
+* Formulářový prvek `&lt;form data-testid=&quot;course_form&quot;&gt;` zůstane viditelný.
+* U jednotlivých povinných polí se vykreslí srozumitelná validační hlášení (např. *„Název kurzu je povinný“*, *„Kapacita musí být kladné celé číslo“*).
+* K přesměrování do katalogu kurzů dojde výhradně po úspěšném uložení platného kurzu (dle US-13).
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Klientská aplikace provede `POST` požadavek na `/api/courses` s prázdnými/nulovými hodnotami.
+* Backend vrátí stav `HTTP 422 Unprocessable Entity`.
+* Klientský router chybu ignoruje, nezobrazí žádné validační hlášky a okamžitě přesměruje uživatele na stránku `/courses/`.
+* Formulář se zavře a lektor nemá zpětnou vazbu, proč kurz nebyl vytvořen.
+
+---
+
+#### ⚠️ Bezpečnostní a byznysový dopad (Security &amp; Business Impact)
+* **Byznysový dopad / UX:** Závažné zmatení uživatele (lektora), který se domnívá, že kurz byl vytvořen, přestože jej backend odmítl. Ztráta vyplněných dat v případě částečně chybného formuláře.
+* **Zatížení backendu:** Zbytečné odesílání nevalidních požadavků na server kvůli absenci frontendové validace.
+* **Dopad na testování:** Selhání validačního testu `TC-34-LEC` v testovací sadě [tests/lecturer/test_lecturer.py](../tests/lecturer/test_lecturer.py).
+
+---
+
+#### 💻 Technický důkaz a vizuální záznamy (Failure Log &amp; Visual Evidence)
+* **Výstup z běhu testu:** `tests/lecturer/test_lecturer.py::TestLecturerCourseManagement::test_tc34_lec_validation_required_fields_and_numeric_values`
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-02_20261124_1322.png`
+* **Zachycená síťová komunikace:**
+```text
+Request: POST http://testovani.kitner.cz/api/courses
+Payload: name=&quot;&quot;, description=&quot;&quot;, capacity=0, price=0
+Response: HTTP 422 Unprocessable Entity
+Action: SPA Router unconditionally navigates to /courses/
+```
+* **Chybový výpis z Playwrightu:**
+```text
+&gt; expect(create_page.form).to_be_visible()
+E AssertionError: Locator expected to be visible
+E Actual value: hidden
+E Call log:
+E   - Expect &quot;to_be_visible&quot; with timeout 5000ms
+E   - waiting for get_by_test_id(&quot;course_form&quot;)
+E     Error: element(s) not found (Page redirected to /courses/)
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+1. **Frontend (Formulářová validace &amp; SPA router):**  
+   - Doplnit klientskou validaci před odesláním formuláře (HTML5 atributy `required`, `min=&quot;1&quot;` u číselných polí nebo validační knihovnu).
+   - V obsluze odeslání zachytit chybový stav API (`catch (error)`) a při kódu `422` zobrazit chybové zprávy u příslušných polí namísto navigace `router.push(&#x27;/courses&#x27;)`.
+2. **Backend API:**  
+   - Backend správně vrací `422`, doporučuje se zachovat strukturovanou JSON odpověď s konkrétními chybami pro jednotlivá pole (např. `{&quot;errors&quot;: {&quot;name&quot;: [&quot;The name field is required.&quot;]}}`).
+
+---
+
+#### 🔄 Záznam o verifikaci opravy (Verification Log)
+* **Datum re-testu:** *(vyplní se po nasazení opravy)*
+* **Verifikoval:** *(jméno testera po re-testu)*
+* **Výsledek re-testu:** *(zatím neproveden)*
+
+---</textarea>
+                        </div>
+                        <div class="detail-section">
+                            <h4>📋 JIRA Ticket Metadata</h4>
+                            <table class='meta-table'><tr><td class='meta-key'>Project</td><td class='meta-val'>Demo Login &amp; Courses Portal (<code>DLCP</code>)</td></tr><tr><td class='meta-key'>Issue Type</td><td class='meta-val'>🐞 Bug / Defect</td></tr><tr><td class='meta-key'>Summary (Název)</td><td class='meta-val'><code>[LEC/Validace] Chybějící klientská validace formuláře pro vytvoření kurzu a neošetření HTTP 422</code></td></tr><tr><td class='meta-key'>Komponenta</td><td class='meta-val'>Frontend / Lektor / Validace</td></tr><tr><td class='meta-key'>Závažnost (Severity)</td><td class='meta-val'>Medium (Absence klientské validace povinných polí formuláře a ignorování chybové odpovědi API ze strany SPA routeru)</td></tr><tr><td class='meta-key'>Priorita (Priority)</td><td class='meta-val'>Medium (Běžná validační a funkční vada s existujícím workaroundem – správné vyplnění všech polí)</td></tr><tr><td class='meta-key'>Reprodukovatelnost</td><td class='meta-val'>Vždy (100 %)</td></tr><tr><td class='meta-key'>Vázané User Stories</td><td class='meta-val'>- [<code>US-13: Vytvoření nového kurzu lektorem</code>](požadavky_ust_podle_src.md#us-13-vytvoření-nového-kurzu-lektorem)</td></tr><tr><td class='meta-key'>Související Test Casy</td><td class='meta-val'>- <code>TC-34-LEC</code> (v [<code>tests/lecturer/test_lecturer.py</code>](../tests/lecturer/test_lecturer.py))</td></tr><tr><td class='meta-key'>Prostředí</td><td class='meta-val'>Testovací prostředí (<code>http://testovani.kitner.cz</code>), Browser: Chromium / Playwright</td></tr><tr><td class='meta-key'>Nahlásil</td><td class='meta-val'>Andrea Wanková</td></tr><tr><td class='meta-key'>Datum nálezu</td><td class='meta-val'>28. 10. 2026</td></tr><tr><td class='meta-key'>Ověření v prohlížeči</td><td class='meta-val'>Reprodukováno (24. 11. 2026)</td></tr></table>
+                        </div>
+                        <div class="sections-grid">
+                            
+                <div class="detail-section">
+                    <h4>📝 Popis problému (Description)</h4>
+                    <div class="sec-body"><p>Při vytváření nového kurzu na stránce <code>/courses/create</code> v roli lektora chybí klientská validace povinných polí (název kurzu, popis, kapacita, cena).</p>
+<p>Pokud lektor odešle prázdný formulář kliknutím na tlačítko <em>„Vytvořit kurz“</em>, formulář se bez varování odešle na backend (<code>POST /api/courses</code>). Backendová služba požadavek správně odmítne s chybovým stavem <code>HTTP 422 Unprocessable Entity</code>, avšak klientská aplikace (SPA router) tuto chybu nezachytí, nezobrazí uživateli žádné validační zprávy u prázdných polí a bezpodmínečně provede přesměrování do katalogu kurzů (<code>/courses/</code>).</p>
+<p>Lektor tak ztrácí kontext, nezíská žádnou zpětnou vazbu o neúspěšném uložení kurzu a formulář je opuštěn.</p></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>⚙️ Předpoklady (Preconditions)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>V systému existuje aktivní účet s rolí <strong>Lektor (Lecturer)</strong>:</li>
+</ol>
+<ul class="md-list">
+<li><strong>E-mail:</strong> <code>lector@lector.com</code></li>
+<li><strong>Heslo:</strong> <code>lector@lector.com</code></li>
+</ul>
+<ol class="md-list">
+<li>Uživatel je přihlášen a nachází se na formuláři pro vytvoření kurzu:</li>
+</ol>
+<ul class="md-list">
+<li><strong>URL:</strong> <code>http://testovani.kitner.cz/courses/create</code></li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>👣 Kroky k reprodukci (Steps to Reproduce)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Otevři v prohlížeči přihlašovací formulář: <code>http://testovani.kitner.cz/login</code>.</li>
+<li>Přihlas se pomocí lektorského účtu (<code>lector@lector.com</code> / <code>lector@lector.com</code>).</li>
+<li>Přejdi na stránku pro vytvoření kurzu: <code>http://testovani.kitner.cz/courses/create</code>.</li>
+<li>Ponechej všechna vstupní pole (<code>Název kurzu</code>, <code>Popis kurzu</code>, <code>Kapacita</code>, <code>Cena</code>) zcela prázdná.</li>
+<li>Klikni na odesílací tlačítko <em>„Vytvořit kurz“</em> (<code>data-testid=&quot;registration_link&quot;</code>).</li>
+<li>Sleduj reakci rozhraní a síťové požadavky (DevTools).</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section sec-expected">
+                    <h4>✅ Očekávané chování (Expected Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Klientský formulář zachytí neúplné odeslání a zabrání odeslání požadavku na server, <strong>NEBO</strong> při obdržení chybového kódu <code>HTTP 422</code> ze serveru zůstane uživatel na formuláři (<code>/courses/create</code>).</li>
+<li>Formulářový prvek <code>&lt;form data-testid=&quot;course_form&quot;&gt;</code> zůstane viditelný.</li>
+<li>U jednotlivých povinných polí se vykreslí srozumitelná validační hlášení (např. <em>„Název kurzu je povinný“</em>, <em>„Kapacita musí být kladné celé číslo“</em>).</li>
+<li>K přesměrování do katalogu kurzů dojde výhradně po úspěšném uložení platného kurzu (dle US-13).</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-actual">
+                    <h4>❌ Skutečné chování (Actual Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Klientská aplikace provede <code>POST</code> požadavek na <code>/api/courses</code> s prázdnými/nulovými hodnotami.</li>
+<li>Backend vrátí stav <code>HTTP 422 Unprocessable Entity</code>.</li>
+<li>Klientský router chybu ignoruje, nezobrazí žádné validační hlášky a okamžitě přesměruje uživatele na stránku <code>/courses/</code>.</li>
+<li>Formulář se zavře a lektor nemá zpětnou vazbu, proč kurz nebyl vytvořen.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-impact">
+                    <h4>⚠️ Bezpečnostní a byznysový dopad (Security &amp; Business Impact)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Byznysový dopad / UX:</strong> Závažné zmatení uživatele (lektora), který se domnívá, že kurz byl vytvořen, přestože jej backend odmítl. Ztráta vyplněných dat v případě částečně chybného formuláře.</li>
+<li><strong>Zatížení backendu:</strong> Zbytečné odesílání nevalidních požadavků na server kvůli absenci frontendové validace.</li>
+<li><strong>Dopad na testování:</strong> Selhání validačního testu <code>TC-34-LEC</code> v testovací sadě <a href="../tests/lecturer/test_lecturer.py" target="_blank" rel="noopener">tests/lecturer/test_lecturer.py</a>.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💻 Technický důkaz a vizuální záznamy (Failure Log &amp; Visual Evidence)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Výstup z běhu testu:</strong> <code>tests/lecturer/test_lecturer.py::TestLecturerCourseManagement::test_tc34_lec_validation_required_fields_and_numeric_values</code></li>
+<li><strong>Screenshot z živého ověření:</strong> <code>reports/screenshots/verify_BR-02_20261124_1322.png</code></li>
+<li><strong>Zachycená síťová komunikace:</strong></li>
+</ul>
+<pre class="code-block"><code>Request: POST http://testovani.kitner.cz/api/courses
+Payload: name=&quot;&quot;, description=&quot;&quot;, capacity=0, price=0
+Response: HTTP 422 Unprocessable Entity
+Action: SPA Router unconditionally navigates to /courses/</code></pre>
+<ul class="md-list">
+<li><strong>Chybový výpis z Playwrightu:</strong></li>
+</ul>
+<pre class="code-block"><code>&gt; expect(create_page.form).to_be_visible()
+E AssertionError: Locator expected to be visible
+E Actual value: hidden
+E Call log:
+E   - Expect &quot;to_be_visible&quot; with timeout 5000ms
+E   - waiting for get_by_test_id(&quot;course_form&quot;)
+E     Error: element(s) not found (Page redirected to /courses/)</code></pre><div class="evidence-gallery"><a class="evidence-card" href="../reports/screenshots/verify_BR-02_20261124_1322.png" target="_blank" rel="noopener" title="Otevřít verify_BR-02_20261124_1322.png v novém okně"><img src="../reports/screenshots/verify_BR-02_20261124_1322.png" alt="verify_BR-02_20261124_1322.png" class="evidence-thumb" loading="lazy"><span class="evidence-caption">🖼️ verify_BR-02_20261124_1322.png</span></a></div></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💡 Doporučené řešení pro vývojáře (Fix Recommendation)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li><strong>Frontend (Formulářová validace &amp; SPA router):</strong></li>
+</ol>
+<ul class="md-list">
+<li>Doplnit klientskou validaci před odesláním formuláře (HTML5 atributy <code>required</code>, <code>min=&quot;1&quot;</code> u číselných polí nebo validační knihovnu).</li>
+<li>V obsluze odeslání zachytit chybový stav API (<code>catch (error)</code>) a při kódu <code>422</code> zobrazit chybové zprávy u příslušných polí namísto navigace <code>router.push(&#x27;/courses&#x27;)</code>.</li>
+</ul>
+<ol class="md-list">
+<li><strong>Backend API:</strong></li>
+</ol>
+<ul class="md-list">
+<li>Backend správně vrací <code>422</code>, doporučuje se zachovat strukturovanou JSON odpověď s konkrétními chybami pro jednotlivá pole (např. <code>{&quot;errors&quot;: {&quot;name&quot;: [&quot;The name field is required.&quot;]}}</code>).</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>🔄 Záznam o verifikaci opravy (Verification Log)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Datum re-testu:</strong> <em>(vyplní se po nasazení opravy)</em></li>
+<li><strong>Verifikoval:</strong> <em>(jméno testera po re-testu)</em></li>
+<li><strong>Výsledek re-testu:</strong> <em>(zatím neproveden)</em></li>
+</ul></div>
+                </div>
+                
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr class="story-row"
+                data-status="open"
+                data-severity="high"
+                data-module="AUTH"
+                data-search="br-03 auth chybějící klientské rozhraní pro dokončení obnovy hesla na `/reset-password` high high us-05 ### 🐞 br-03 [auth]: chybějící klientské rozhraní pro dokončení obnovy hesla na /reset-password
+
+#### jira ticket metadata
+* **project:** demo login &amp; courses portal (`dlcp`)
+* **issue type:** 🐞 bug / defect
+* **summary (název):** `[auth/reset] chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password`
+* **komponenta:** frontend / autentizace / reset hesla
+* **závažnost (severity):** high (uživatel po obdržení resetovacího odkazu nemůže dokončit změnu zapomenutého hesla)
+* **priorita (priority):** high (závažná funkční překážka v klíčovém bezpečnostním procesu obnovy "
+                onclick="toggleDetail('detail-2', this)">
+                <td><strong>BR-03</strong></td>
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td class="col-title">Chybějící klientské rozhraní pro dokončení obnovy hesla na `/reset-password`</td>
+                <td class="text-center"><span class="badge badge-amber">High</span></td>
+                <td class="text-center"><span class="badge badge-amber">High</span></td>
+                <td>US-05</td>
+                <td class="text-center"><span class="badge badge-danger">🔴 Otevřeno</span></td>
+                <td class="text-center"><button class="btn-toggle" aria-label="Zobrazit detail">▼</button></td>
+            </tr>
+            <tr id="detail-2" class="accordion-content">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        <div class="detail-actions">
+                            <div class="detail-title-group">
+                                <span class="detail-id-label">📌 Detail hlášení BR-03</span>
+                                <span class="badge badge-danger" title="Ověření v prohlížeči">🌐 Reprodukováno (24. 11. 2026)</span>
+                            </div>
+                            <button type="button" class="btn-copy" onclick="copyJiraMarkdown(event, 'raw-2', this)">
+                                📋 Kopírovat pro JIRA
+                            </button>
+                            <textarea id="raw-2" class="hidden-raw" readonly>### 🐞 BR-03 [AUTH]: Chybějící klientské rozhraní pro dokončení obnovy hesla na /reset-password
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login &amp; Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[AUTH/Reset] Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password`
+* **Komponenta:** Frontend / Autentizace / Reset hesla
+* **Závažnost (Severity):** High (Uživatel po obdržení resetovacího odkazu nemůže dokončit změnu zapomenutého hesla)
+* **Priorita (Priority):** High (Závažná funkční překážka v klíčovém bezpečnostním procesu obnovy přístupu)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:** 
+  - [`US-05: Dokončení změny hesla pomocí tokenu`](požadavky_ust_podle_src.md#us-05-dokončení-změny-hesla-pomocí-tokenu)
+* **Související Test Casy:** 
+  - `TC-14-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+  - `TC-16-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 1. 11. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
+
+---
+
+#### 📝 Popis problému (Description)
+Aplikace má funkční odeslání žádosti o reset zapomenutého hesla na `/forgot-password` (US-04). 
+Pokud však uživatel otevře odkaz pro dokončení resetu hesla s tokenem (např. `/reset-password?token=XYZ&amp;email=tester@kitner.cz`), klientská SPA aplikace vykreslí pouze prázdnou stránku (`&lt;div data-testid=&quot;page_container&quot;&gt;`) bez jakéhokoliv formuláře, vstupních polí pro nové heslo a potvrzení hesla, i bez tlačítka pro odeslání.
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Otevři v prohlížeči URL: `http://testovani.kitner.cz/reset-password?token=platny_token_123&amp;email=tester@kitner.cz`.
+2. Počkej na dokončení načtení sítě (`networkidle`).
+3. Zkontroluj zobrazený obsah stránky.
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Zobrazí se formulář pro nastavení nového hesla obsahující:
+  - Vstupní pole pro nové heslo (`data-testid=&quot;password_input&quot;`).
+  - Vstupní pole pro kontrolní potvrzení hesla (`data-testid=&quot;password_again_input&quot;`).
+  - Odesílací tlačítko (`data-testid=&quot;submit_button&quot;`).
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Stránka je zcela prázdná, žádná vstupní pole ani formulář se nevykreslí.
+* Test `TC-14-AUTH` selže na timeoutu při čekání na `get_by_test_id(&quot;password_input&quot;)`.
+
+---
+
+#### 💻 Technický důkaz (Failure Log)
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-03_20261124_1322.png`
+```text
+&gt; expect(reset_page.password_input).to_be_visible()
+E AssertionError: Locator expected to be visible
+E Call log:
+E   - Expect &quot;to_be_visible&quot; with timeout 5000ms
+E   - waiting for get_by_test_id(&quot;password_input&quot;)
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+1. Do Vue routeru implementovat komponentu formuláře nového hesla pro trasu `/reset-password`.
+2. Propojit formulář s backendovým koncovým bodem pro uložení nového hesla.
+
+---</textarea>
+                        </div>
+                        <div class="detail-section">
+                            <h4>📋 JIRA Ticket Metadata</h4>
+                            <table class='meta-table'><tr><td class='meta-key'>Project</td><td class='meta-val'>Demo Login &amp; Courses Portal (<code>DLCP</code>)</td></tr><tr><td class='meta-key'>Issue Type</td><td class='meta-val'>🐞 Bug / Defect</td></tr><tr><td class='meta-key'>Summary (Název)</td><td class='meta-val'><code>[AUTH/Reset] Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password</code></td></tr><tr><td class='meta-key'>Komponenta</td><td class='meta-val'>Frontend / Autentizace / Reset hesla</td></tr><tr><td class='meta-key'>Závažnost (Severity)</td><td class='meta-val'>High (Uživatel po obdržení resetovacího odkazu nemůže dokončit změnu zapomenutého hesla)</td></tr><tr><td class='meta-key'>Priorita (Priority)</td><td class='meta-val'>High (Závažná funkční překážka v klíčovém bezpečnostním procesu obnovy přístupu)</td></tr><tr><td class='meta-key'>Reprodukovatelnost</td><td class='meta-val'>Vždy (100 %)</td></tr><tr><td class='meta-key'>Vázané User Stories</td><td class='meta-val'>- [<code>US-05: Dokončení změny hesla pomocí tokenu</code>](požadavky_ust_podle_src.md#us-05-dokončení-změny-hesla-pomocí-tokenu)</td></tr><tr><td class='meta-key'>Související Test Casy</td><td class='meta-val'><ul class="md-list">
+<li><code>TC-14-AUTH</code> (v [<code>tests/auth/test_password_reset.py</code>](../tests/auth/test_password_reset.py))</li>
+<li><code>TC-16-AUTH</code> (v [<code>tests/auth/test_password_reset.py</code>](../tests/auth/test_password_reset.py))</li>
+</ul></td></tr><tr><td class='meta-key'>Prostředí</td><td class='meta-val'>Testovací prostředí (<code>http://testovani.kitner.cz</code>), Browser: Chromium / Playwright</td></tr><tr><td class='meta-key'>Nahlásil</td><td class='meta-val'>Andrea Wanková</td></tr><tr><td class='meta-key'>Datum nálezu</td><td class='meta-val'>1. 11. 2026</td></tr><tr><td class='meta-key'>Ověření v prohlížeči</td><td class='meta-val'>Reprodukováno (24. 11. 2026)</td></tr></table>
+                        </div>
+                        <div class="sections-grid">
+                            
+                <div class="detail-section">
+                    <h4>📝 Popis problému (Description)</h4>
+                    <div class="sec-body"><p>Aplikace má funkční odeslání žádosti o reset zapomenutého hesla na <code>/forgot-password</code> (US-04).</p>
+<p>Pokud však uživatel otevře odkaz pro dokončení resetu hesla s tokenem (např. <code>/reset-password?token=XYZ&amp;email=tester@kitner.cz</code>), klientská SPA aplikace vykreslí pouze prázdnou stránku (<code>&lt;div data-testid=&quot;page_container&quot;&gt;</code>) bez jakéhokoliv formuláře, vstupních polí pro nové heslo a potvrzení hesla, i bez tlačítka pro odeslání.</p></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>👣 Kroky k reprodukci (Steps to Reproduce)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Otevři v prohlížeči URL: <code>http://testovani.kitner.cz/reset-password?token=platny_token_123&amp;email=tester@kitner.cz</code>.</li>
+<li>Počkej na dokončení načtení sítě (<code>networkidle</code>).</li>
+<li>Zkontroluj zobrazený obsah stránky.</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section sec-expected">
+                    <h4>✅ Očekávané chování (Expected Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Zobrazí se formulář pro nastavení nového hesla obsahující:</li>
+<li>Vstupní pole pro nové heslo (<code>data-testid=&quot;password_input&quot;</code>).</li>
+<li>Vstupní pole pro kontrolní potvrzení hesla (<code>data-testid=&quot;password_again_input&quot;</code>).</li>
+<li>Odesílací tlačítko (<code>data-testid=&quot;submit_button&quot;</code>).</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-actual">
+                    <h4>❌ Skutečné chování (Actual Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Stránka je zcela prázdná, žádná vstupní pole ani formulář se nevykreslí.</li>
+<li>Test <code>TC-14-AUTH</code> selže na timeoutu při čekání na <code>get_by_test_id(&quot;password_input&quot;)</code>.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💻 Technický důkaz (Failure Log)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Screenshot z živého ověření:</strong> <code>reports/screenshots/verify_BR-03_20261124_1322.png</code></li>
+</ul>
+<pre class="code-block"><code>&gt; expect(reset_page.password_input).to_be_visible()
+E AssertionError: Locator expected to be visible
+E Call log:
+E   - Expect &quot;to_be_visible&quot; with timeout 5000ms
+E   - waiting for get_by_test_id(&quot;password_input&quot;)</code></pre><div class="evidence-gallery"><a class="evidence-card" href="../reports/screenshots/verify_BR-03_20261124_1322.png" target="_blank" rel="noopener" title="Otevřít verify_BR-03_20261124_1322.png v novém okně"><img src="../reports/screenshots/verify_BR-03_20261124_1322.png" alt="verify_BR-03_20261124_1322.png" class="evidence-thumb" loading="lazy"><span class="evidence-caption">🖼️ verify_BR-03_20261124_1322.png</span></a></div></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💡 Doporučené řešení pro vývojáře (Fix Recommendation)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Do Vue routeru implementovat komponentu formuláře nového hesla pro trasu <code>/reset-password</code>.</li>
+<li>Propojit formulář s backendovým koncovým bodem pro uložení nového hesla.</li>
+</ol></div>
+                </div>
+                
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr class="story-row"
+                data-status="open"
+                data-severity="medium"
+                data-module="ENR"
+                data-search="br-04 enr chybná validace nepovinného ičo – prázdné pole blokuje registraci s chybou „neplatné ičo“ medium high us-11 ### 🐞 br-04 [enr]: chybná validace nepovinného ičo – prázdné pole způsobuje chybu „neplatné ičo“ a blokuje zápis
+
+#### jira ticket metadata
+* **project:** demo login &amp; courses portal (`dlcp`)
+* **issue type:** 🐞 bug / defect
+* **summary (název):** `[enrollment/validation] formulář nezávazné registrace kurzu nepovoluje odeslání bez ičo a hlásí „neplatné ičo“`
+* **komponenta:** frontend / zápis na kurz / validace formuláře
+* **závažnost (severity):** medium (uživatel bez ičo – nepodnikající fyzická osoba – se nemůže přihlásit na kurz)
+* **priorita (priority):** high (blokuje zápis běžných studen"
+                onclick="toggleDetail('detail-3', this)">
+                <td><strong>BR-04</strong></td>
+                <td><span class="module-tag mod-enr">ENR</span></td>
+                <td class="col-title">Chybná validace nepovinného IČO – prázdné pole blokuje registraci s chybou „Neplatné IČO“</td>
+                <td class="text-center"><span class="badge badge-warning">Medium</span></td>
+                <td class="text-center"><span class="badge badge-amber">High</span></td>
+                <td>US-11</td>
+                <td class="text-center"><span class="badge badge-danger">🔴 Otevřeno</span></td>
+                <td class="text-center"><button class="btn-toggle" aria-label="Zobrazit detail">▼</button></td>
+            </tr>
+            <tr id="detail-3" class="accordion-content">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        <div class="detail-actions">
+                            <div class="detail-title-group">
+                                <span class="detail-id-label">📌 Detail hlášení BR-04</span>
+                                <span class="badge badge-danger" title="Ověření v prohlížeči">🌐 Reprodukováno (24. 11. 2026)</span>
+                            </div>
+                            <button type="button" class="btn-copy" onclick="copyJiraMarkdown(event, 'raw-3', this)">
+                                📋 Kopírovat pro JIRA
+                            </button>
+                            <textarea id="raw-3" class="hidden-raw" readonly>### 🐞 BR-04 [ENR]: Chybná validace nepovinného IČO – prázdné pole způsobuje chybu „Neplatné IČO“ a blokuje zápis
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login &amp; Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[Enrollment/Validation] Formulář nezávazné registrace kurzu nepovoluje odeslání bez IČO a hlásí „Neplatné IČO“`
+* **Komponenta:** Frontend / Zápis na kurz / Validace formuláře
+* **Závažnost (Severity):** Medium (Uživatel bez IČO – nepodnikající fyzická osoba – se nemůže přihlásit na kurz)
+* **Priorita (Priority):** High (Blokuje zápis běžných studentů / soukromých zájemců bez živnostenského oprávnění)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:** 
+  - [`US-11: Nezávazná registrace na běh kurzu`](požadavky_ust_podle_src.md#us-11-nezávazná-registrace-na-běh-kurzu-s-validací-ičo-a-telefonu) (AK-1, AK-3)
+* **Související Test Casy:** 
+  - `TC-28-ENR` (v [`tests/enrollment/test_enrollment.py`](../tests/enrollment/test_enrollment.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 9. 11. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
+
+---
+
+#### 📝 Popis problému (Description)
+Dle akceptačního kritéria AK-3 v US-11 má být IČO nepovinným údajem: validace algoritmem kontrolního součtu modulo 11 má proběhnout **pouze tehdy, pokud uživatel IČO zadá**.
+V aplikaci však validační logika na klientské straně vyhodnocuje i prázdný řetězec v poli IČO jako neplatné IČO, zobrazí hlášku `Neplatné IČO` a zablokuje odeslání nezávazné registrace. Zákazník bez IČO tak nemůže dokončit zápis.
+
+---
+
+#### ⚙️ Předpoklady (Preconditions)
+1. Přihlášený uživatel v roli **Zákazník** (`tester@kitner.cz` / `TajneHeslo123`).
+2. Uživatel se nachází na objednávkovém formuláři volného běhu kurzu (např. `/courses/76/register`).
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Přejdi na formulář zápisu na kurz: `http://testovani.kitner.cz/courses/76/register`.
+2. Do pole **Telefon** zadej platné telefonní číslo: `+420 777 123 456`.
+3. Pole **IČO** ponech zcela prázdné.
+4. Klikni na tlačítko **„Nezávazná registrace“** (`data-testid=&quot;registration_link&quot;`).
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Protože IČO je nepovinné, formulář projde validací.
+* Objednávka je úspěšně odeslána a vytvořen zápis studenta.
+* Zákazník je přesměrován do sekce `http://testovani.kitner.cz/my-courses`.
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Formulář se neodešle a zůstává na adrese `/courses/76/register`.
+* U pole IČO se zobrazí červená chybová hláška **„Neplatné IČO“**.
+
+---
+
+#### 💻 Technický důkaz (Failure Log)
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-04_20261124_1322.png`
+```text
+&gt; expect(page).to_have_url(my_courses_page.URL)
+E AssertionError: Page URL expected to be &#x27;http://testovani.kitner.cz/my-courses&#x27;
+E Actual value: http://testovani.kitner.cz/courses/76/register
+E Call log:
+E   - Expect &quot;to_have_url&quot; with timeout 5000ms
+E     14 × unexpected value &quot;http://testovani.kitner.cz/courses/76/register&quot;
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+V klientské validační funkci upravit podmínku tak, aby se validace kontrolního součtu modulo 11 spouštěla pouze v případě neprázdné hodnoty:
+```javascript
+if (ico &amp;&amp; ico.trim() !== &quot;&quot;) {
+    // spustit validaci modulo 11
+}
+```
+
+---</textarea>
+                        </div>
+                        <div class="detail-section">
+                            <h4>📋 JIRA Ticket Metadata</h4>
+                            <table class='meta-table'><tr><td class='meta-key'>Project</td><td class='meta-val'>Demo Login &amp; Courses Portal (<code>DLCP</code>)</td></tr><tr><td class='meta-key'>Issue Type</td><td class='meta-val'>🐞 Bug / Defect</td></tr><tr><td class='meta-key'>Summary (Název)</td><td class='meta-val'><code>[Enrollment/Validation] Formulář nezávazné registrace kurzu nepovoluje odeslání bez IČO a hlásí „Neplatné IČO“</code></td></tr><tr><td class='meta-key'>Komponenta</td><td class='meta-val'>Frontend / Zápis na kurz / Validace formuláře</td></tr><tr><td class='meta-key'>Závažnost (Severity)</td><td class='meta-val'>Medium (Uživatel bez IČO – nepodnikající fyzická osoba – se nemůže přihlásit na kurz)</td></tr><tr><td class='meta-key'>Priorita (Priority)</td><td class='meta-val'>High (Blokuje zápis běžných studentů / soukromých zájemců bez živnostenského oprávnění)</td></tr><tr><td class='meta-key'>Reprodukovatelnost</td><td class='meta-val'>Vždy (100 %)</td></tr><tr><td class='meta-key'>Vázané User Stories</td><td class='meta-val'>- [<code>US-11: Nezávazná registrace na běh kurzu</code>](požadavky_ust_podle_src.md#us-11-nezávazná-registrace-na-běh-kurzu-s-validací-ičo-a-telefonu) (AK-1, AK-3)</td></tr><tr><td class='meta-key'>Související Test Casy</td><td class='meta-val'>- <code>TC-28-ENR</code> (v [<code>tests/enrollment/test_enrollment.py</code>](../tests/enrollment/test_enrollment.py))</td></tr><tr><td class='meta-key'>Prostředí</td><td class='meta-val'>Testovací prostředí (<code>http://testovani.kitner.cz</code>), Browser: Chromium / Playwright</td></tr><tr><td class='meta-key'>Nahlásil</td><td class='meta-val'>Andrea Wanková</td></tr><tr><td class='meta-key'>Datum nálezu</td><td class='meta-val'>9. 11. 2026</td></tr><tr><td class='meta-key'>Ověření v prohlížeči</td><td class='meta-val'>Reprodukováno (24. 11. 2026)</td></tr></table>
+                        </div>
+                        <div class="sections-grid">
+                            
+                <div class="detail-section">
+                    <h4>📝 Popis problému (Description)</h4>
+                    <div class="sec-body"><p>Dle akceptačního kritéria AK-3 v US-11 má být IČO nepovinným údajem: validace algoritmem kontrolního součtu modulo 11 má proběhnout <strong>pouze tehdy, pokud uživatel IČO zadá</strong>.</p>
+<p>V aplikaci však validační logika na klientské straně vyhodnocuje i prázdný řetězec v poli IČO jako neplatné IČO, zobrazí hlášku <code>Neplatné IČO</code> a zablokuje odeslání nezávazné registrace. Zákazník bez IČO tak nemůže dokončit zápis.</p></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>⚙️ Předpoklady (Preconditions)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Přihlášený uživatel v roli <strong>Zákazník</strong> (<code>tester@kitner.cz</code> / <code>TajneHeslo123</code>).</li>
+<li>Uživatel se nachází na objednávkovém formuláři volného běhu kurzu (např. <code>/courses/76/register</code>).</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>👣 Kroky k reprodukci (Steps to Reproduce)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Přejdi na formulář zápisu na kurz: <code>http://testovani.kitner.cz/courses/76/register</code>.</li>
+<li>Do pole <strong>Telefon</strong> zadej platné telefonní číslo: <code>+420 777 123 456</code>.</li>
+<li>Pole <strong>IČO</strong> ponech zcela prázdné.</li>
+<li>Klikni na tlačítko <strong>„Nezávazná registrace“</strong> (<code>data-testid=&quot;registration_link&quot;</code>).</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section sec-expected">
+                    <h4>✅ Očekávané chování (Expected Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Protože IČO je nepovinné, formulář projde validací.</li>
+<li>Objednávka je úspěšně odeslána a vytvořen zápis studenta.</li>
+<li>Zákazník je přesměrován do sekce <code>http://testovani.kitner.cz/my-courses</code>.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-actual">
+                    <h4>❌ Skutečné chování (Actual Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Formulář se neodešle a zůstává na adrese <code>/courses/76/register</code>.</li>
+<li>U pole IČO se zobrazí červená chybová hláška <strong>„Neplatné IČO“</strong>.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💻 Technický důkaz (Failure Log)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Screenshot z živého ověření:</strong> <code>reports/screenshots/verify_BR-04_20261124_1322.png</code></li>
+</ul>
+<pre class="code-block"><code>&gt; expect(page).to_have_url(my_courses_page.URL)
+E AssertionError: Page URL expected to be &#x27;http://testovani.kitner.cz/my-courses&#x27;
+E Actual value: http://testovani.kitner.cz/courses/76/register
+E Call log:
+E   - Expect &quot;to_have_url&quot; with timeout 5000ms
+E     14 × unexpected value &quot;http://testovani.kitner.cz/courses/76/register&quot;</code></pre><div class="evidence-gallery"><a class="evidence-card" href="../reports/screenshots/verify_BR-04_20261124_1322.png" target="_blank" rel="noopener" title="Otevřít verify_BR-04_20261124_1322.png v novém okně"><img src="../reports/screenshots/verify_BR-04_20261124_1322.png" alt="verify_BR-04_20261124_1322.png" class="evidence-thumb" loading="lazy"><span class="evidence-caption">🖼️ verify_BR-04_20261124_1322.png</span></a></div></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💡 Doporučené řešení pro vývojáře (Fix Recommendation)</h4>
+                    <div class="sec-body"><p>V klientské validační funkci upravit podmínku tak, aby se validace kontrolního součtu modulo 11 spouštěla pouze v případě neprázdné hodnoty:</p>
+<pre class="code-block"><code>if (ico &amp;&amp; ico.trim() !== &quot;&quot;) {
+    // spustit validaci modulo 11
+}</code></pre></div>
+                </div>
+                
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr class="story-row"
+                data-status="open"
+                data-severity="high"
+                data-module="AUTH"
+                data-search="br-05 auth chybějící klientské rozhraní pro ověření e-mailu (/overeni-emailu a /email/verify) high medium us-06 ### 🐞 br-05 [auth]: chybějící klientské rozhraní pro ověření e-mailu (/overeni-emailu a /email/verify)
+
+#### jira ticket metadata
+* **project:** demo login &amp; courses portal (`dlcp`)
+* **issue type:** 🐞 bug / defect
+* **summary (název):** `[auth/verification] chybějící klientské rozhraní pro ověření e-mailu a znovuzaslání odkazu (/overeni-emailu a /email/verify)`
+* **komponenta:** frontend / autentizace / ověření e-mailu
+* **závažnost (severity):** high (uživatel nemůže dokončit ověření e-mailové adresy ani si vyžádat nový ověřovací odkaz)
+* **priorita (priority):** medium (chybí celá klientská"
+                onclick="toggleDetail('detail-4', this)">
+                <td><strong>BR-05</strong></td>
+                <td><span class="module-tag mod-auth">AUTH</span></td>
+                <td class="col-title">Chybějící klientské rozhraní pro ověření e-mailu (/overeni-emailu a /email/verify)</td>
+                <td class="text-center"><span class="badge badge-amber">High</span></td>
+                <td class="text-center"><span class="badge badge-warning">Medium</span></td>
+                <td>US-06</td>
+                <td class="text-center"><span class="badge badge-danger">🔴 Otevřeno</span></td>
+                <td class="text-center"><button class="btn-toggle" aria-label="Zobrazit detail">▼</button></td>
+            </tr>
+            <tr id="detail-4" class="accordion-content">
+                <td colspan="8">
+                    <div class="accordion-inner">
+                        <div class="detail-actions">
+                            <div class="detail-title-group">
+                                <span class="detail-id-label">📌 Detail hlášení BR-05</span>
+                                <span class="badge badge-danger" title="Ověření v prohlížeči">🌐 Reprodukováno (24. 11. 2026)</span>
+                            </div>
+                            <button type="button" class="btn-copy" onclick="copyJiraMarkdown(event, 'raw-4', this)">
+                                📋 Kopírovat pro JIRA
+                            </button>
+                            <textarea id="raw-4" class="hidden-raw" readonly>### 🐞 BR-05 [AUTH]: Chybějící klientské rozhraní pro ověření e-mailu (/overeni-emailu a /email/verify)
+
+#### JIRA Ticket Metadata
+* **Project:** Demo Login &amp; Courses Portal (`DLCP`)
+* **Issue Type:** 🐞 Bug / Defect
+* **Summary (Název):** `[AUTH/Verification] Chybějící klientské rozhraní pro ověření e-mailu a znovuzaslání odkazu (/overeni-emailu a /email/verify)`
+* **Komponenta:** Frontend / Autentizace / Ověření e-mailu
+* **Závažnost (Severity):** High (Uživatel nemůže dokončit ověření e-mailové adresy ani si vyžádat nový ověřovací odkaz)
+* **Priorita (Priority):** Medium (Chybí celá klientská funkcionalita požadovaná v US-06; přihlášení základních účtů je funkční)
+* **Reprodukovatelnost:** Vždy (100 %)
+* **Vázané User Stories:**
+  - [`US-06: Ověření e-mailové adresy (Email Verification)`](požadavky_ust_podle_src.md#us-06-ověření-e-mailové-adresy-email-verification)
+* **Související Test Casy:**
+  - `TC-17-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+  - `TC-18-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+  - `TC-19-AUTH` (v [`tests/auth/test_password_reset.py`](../tests/auth/test_password_reset.py))
+* **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
+* **Nahlásil:** Andrea Wanková
+* **Datum nálezu:** 23. 11. 2026
+* **Ověření v prohlížeči:** Reprodukováno (24. 11. 2026)
+
+---
+
+#### 📝 Popis problému (Description)
+Aplikace vrací na adresách `/overeni-emailu?token=...` a `/email/verify` stavový kód HTTP `200`, ale klientská SPA aplikace vykreslí pouze prázdnou stránku (`&lt;div data-testid=&quot;page_container&quot;&gt;` s prázdným obsahem a `&lt;title&gt;Document&lt;/title&gt;`). Chybí zde jakékoli zobrazení potvrzení o úspěšném ověření e-mailu, chybové hlášení při neplatném/expirovaném tokenu i rozhraní pro opětovné zaslání ověřovacího odkazu.
+
+---
+
+#### ⚙️ Předpoklady (Preconditions)
+* Testovací prostředí `http://testovani.kitner.cz` je dostupné.
+
+---
+
+#### 👣 Kroky k reprodukci (Steps to Reproduce)
+1. Otevři v prohlížeči URL `http://testovani.kitner.cz/overeni-emailu?token=platny_verifikacni_token_123` (příp. s neplatným tokenem `neplatny_token_xyz`).
+2. Otevři v prohlížeči URL `http://testovani.kitner.cz/email/verify`.
+3. Počkej na dokončení načtení sítě (`networkidle`) a zkontroluj obsah stránky.
+
+---
+
+#### ✅ Očekávané chování (Expected Result)
+* Na `/overeni-emailu?token=...` se zobrazí informace o úspěšném ověření e-mailu, nebo chybová hláška o neplatném či expirovaném odkazu (dle platnosti tokenu).
+* Na `/email/verify` se zobrazí výzva k ověření e-mailu a ovládací prvek pro znovuzaslání ověřovacího e-mailu (s rate-limit ochranou).
+
+---
+
+#### ❌ Skutečné chování (Actual Result)
+* Na všech třech kontrolovaných URL zůstává stránka zcela prázdná (prázdný `page_container` bez textu, hlášek i formuláře/tlačítka).
+
+---
+
+#### ⚠️ Bezpečnostní a byznysový dopad (Security &amp; Business Impact)
+* Uživatelé nemohou ověřit vlastnictví své e-mailové schránky ani si vyžádat nový odkaz, čímž není splněna žádná z částí `US-06`.
+
+---
+
+#### 💻 Technický důkaz a vizuální záznamy (Failure Log &amp; Visual Evidence)
+* **Screenshot z živého ověření:** `reports/screenshots/verify_BR-05_20261124_1322.png`
+```text
+URL: http://testovani.kitner.cz/overeni-emailu?token=platny_verifikacni_token_123 -&gt; status: 200, TITLE: Document, TEXT: &quot;&quot;
+URL: http://testovani.kitner.cz/overeni-emailu?token=neplatny_token_xyz -&gt; status: 200, TITLE: Document, TEXT: &quot;&quot;
+URL: http://testovani.kitner.cz/email/verify -&gt; status: 200, TITLE: Document, TEXT: &quot;&quot;
+```
+
+---
+
+#### 💡 Doporučené řešení pro vývojáře (Fix Recommendation)
+1. Implementovat v routeru a komponentách frontendu zobrazení stavových zpráv pro `/overeni-emailu` (úspěch vs. neplatný/expirovaný token).
+2. Implementovat UI komponentu na `/email/verify` s tlačítkem pro znovuzaslání ověřovacího e-mailu a napojením na backendový rate-limit endpoint.
+
+---
+
+#### 🔄 Záznam o verifikaci opravy (Verification Log)
+* *23. 11. 2026:* Chyba potvrzena v testovacím prostředí (`TC-17-AUTH`, `TC-18-AUTH`, `TC-19-AUTH` označeny jako `@pytest.mark.xfail(..., strict=True)`). Čeká na opravu.</textarea>
+                        </div>
+                        <div class="detail-section">
+                            <h4>📋 JIRA Ticket Metadata</h4>
+                            <table class='meta-table'><tr><td class='meta-key'>Project</td><td class='meta-val'>Demo Login &amp; Courses Portal (<code>DLCP</code>)</td></tr><tr><td class='meta-key'>Issue Type</td><td class='meta-val'>🐞 Bug / Defect</td></tr><tr><td class='meta-key'>Summary (Název)</td><td class='meta-val'><code>[AUTH/Verification] Chybějící klientské rozhraní pro ověření e-mailu a znovuzaslání odkazu (/overeni-emailu a /email/verify)</code></td></tr><tr><td class='meta-key'>Komponenta</td><td class='meta-val'>Frontend / Autentizace / Ověření e-mailu</td></tr><tr><td class='meta-key'>Závažnost (Severity)</td><td class='meta-val'>High (Uživatel nemůže dokončit ověření e-mailové adresy ani si vyžádat nový ověřovací odkaz)</td></tr><tr><td class='meta-key'>Priorita (Priority)</td><td class='meta-val'>Medium (Chybí celá klientská funkcionalita požadovaná v US-06; přihlášení základních účtů je funkční)</td></tr><tr><td class='meta-key'>Reprodukovatelnost</td><td class='meta-val'>Vždy (100 %)</td></tr><tr><td class='meta-key'>Vázané User Stories</td><td class='meta-val'>- [<code>US-06: Ověření e-mailové adresy (Email Verification)</code>](požadavky_ust_podle_src.md#us-06-ověření-e-mailové-adresy-email-verification)</td></tr><tr><td class='meta-key'>Související Test Casy</td><td class='meta-val'><ul class="md-list">
+<li><code>TC-17-AUTH</code> (v [<code>tests/auth/test_password_reset.py</code>](../tests/auth/test_password_reset.py))</li>
+<li><code>TC-18-AUTH</code> (v [<code>tests/auth/test_password_reset.py</code>](../tests/auth/test_password_reset.py))</li>
+<li><code>TC-19-AUTH</code> (v [<code>tests/auth/test_password_reset.py</code>](../tests/auth/test_password_reset.py))</li>
+</ul></td></tr><tr><td class='meta-key'>Prostředí</td><td class='meta-val'>Testovací prostředí (<code>http://testovani.kitner.cz</code>), Browser: Chromium / Playwright</td></tr><tr><td class='meta-key'>Nahlásil</td><td class='meta-val'>Andrea Wanková</td></tr><tr><td class='meta-key'>Datum nálezu</td><td class='meta-val'>23. 11. 2026</td></tr><tr><td class='meta-key'>Ověření v prohlížeči</td><td class='meta-val'>Reprodukováno (24. 11. 2026)</td></tr></table>
+                        </div>
+                        <div class="sections-grid">
+                            
+                <div class="detail-section">
+                    <h4>📝 Popis problému (Description)</h4>
+                    <div class="sec-body"><p>Aplikace vrací na adresách <code>/overeni-emailu?token=...</code> a <code>/email/verify</code> stavový kód HTTP <code>200</code>, ale klientská SPA aplikace vykreslí pouze prázdnou stránku (<code>&lt;div data-testid=&quot;page_container&quot;&gt;</code> s prázdným obsahem a <code>&lt;title&gt;Document&lt;/title&gt;</code>). Chybí zde jakékoli zobrazení potvrzení o úspěšném ověření e-mailu, chybové hlášení při neplatném/expirovaném tokenu i rozhraní pro opětovné zaslání ověřovacího odkazu.</p></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>⚙️ Předpoklady (Preconditions)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Testovací prostředí <code>http://testovani.kitner.cz</code> je dostupné.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>👣 Kroky k reprodukci (Steps to Reproduce)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Otevři v prohlížeči URL <code>http://testovani.kitner.cz/overeni-emailu?token=platny_verifikacni_token_123</code> (příp. s neplatným tokenem <code>neplatny_token_xyz</code>).</li>
+<li>Otevři v prohlížeči URL <code>http://testovani.kitner.cz/email/verify</code>.</li>
+<li>Počkej na dokončení načtení sítě (<code>networkidle</code>) a zkontroluj obsah stránky.</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section sec-expected">
+                    <h4>✅ Očekávané chování (Expected Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Na <code>/overeni-emailu?token=...</code> se zobrazí informace o úspěšném ověření e-mailu, nebo chybová hláška o neplatném či expirovaném odkazu (dle platnosti tokenu).</li>
+<li>Na <code>/email/verify</code> se zobrazí výzva k ověření e-mailu a ovládací prvek pro znovuzaslání ověřovacího e-mailu (s rate-limit ochranou).</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-actual">
+                    <h4>❌ Skutečné chování (Actual Result)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Na všech třech kontrolovaných URL zůstává stránka zcela prázdná (prázdný <code>page_container</code> bez textu, hlášek i formuláře/tlačítka).</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section sec-impact">
+                    <h4>⚠️ Bezpečnostní a byznysový dopad (Security &amp; Business Impact)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li>Uživatelé nemohou ověřit vlastnictví své e-mailové schránky ani si vyžádat nový odkaz, čímž není splněna žádná z částí <code>US-06</code>.</li>
+</ul></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💻 Technický důkaz a vizuální záznamy (Failure Log &amp; Visual Evidence)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><strong>Screenshot z živého ověření:</strong> <code>reports/screenshots/verify_BR-05_20261124_1322.png</code></li>
+</ul>
+<pre class="code-block"><code>URL: http://testovani.kitner.cz/overeni-emailu?token=platny_verifikacni_token_123 -&gt; status: 200, TITLE: Document, TEXT: &quot;&quot;
+URL: http://testovani.kitner.cz/overeni-emailu?token=neplatny_token_xyz -&gt; status: 200, TITLE: Document, TEXT: &quot;&quot;
+URL: http://testovani.kitner.cz/email/verify -&gt; status: 200, TITLE: Document, TEXT: &quot;&quot;</code></pre><div class="evidence-gallery"><a class="evidence-card" href="../reports/screenshots/verify_BR-05_20261124_1322.png" target="_blank" rel="noopener" title="Otevřít verify_BR-05_20261124_1322.png v novém okně"><img src="../reports/screenshots/verify_BR-05_20261124_1322.png" alt="verify_BR-05_20261124_1322.png" class="evidence-thumb" loading="lazy"><span class="evidence-caption">🖼️ verify_BR-05_20261124_1322.png</span></a></div></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>💡 Doporučené řešení pro vývojáře (Fix Recommendation)</h4>
+                    <div class="sec-body"><ol class="md-list">
+<li>Implementovat v routeru a komponentách frontendu zobrazení stavových zpráv pro <code>/overeni-emailu</code> (úspěch vs. neplatný/expirovaný token).</li>
+<li>Implementovat UI komponentu na <code>/email/verify</code> s tlačítkem pro znovuzaslání ověřovacího e-mailu a napojením na backendový rate-limit endpoint.</li>
+</ol></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>🔄 Záznam o verifikaci opravy (Verification Log)</h4>
+                    <div class="sec-body"><ul class="md-list">
+<li><em>23. 11. 2026:</em> Chyba potvrzena v testovacím prostředí (<code>TC-17-AUTH</code>, <code>TC-18-AUTH</code>, <code>TC-19-AUTH</code> označeny jako <code>@pytest.mark.xfail(..., strict=True)</code>). Čeká na opravu.</li>
+</ul></div>
+                </div>
+                
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state">Žádný bug report neodpovídá zvoleným filtrům.</div>
+        </div>
+
+        <footer>
+            Automaticky generováno z <code>docs/JIRA_BUG_REPORTS.md</code> pomocí <code>generate_bug_reports.py</code>
+        </footer>
+    </div>
+
+    <script>
+        const activeFilters = {
+            status: 'all',
+            severity: 'all',
+            module: 'all'
+        };
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.filterType;
+                const val = btn.dataset.value;
+                activeFilters[type] = val;
+
+                document.querySelectorAll(`.filter-btn[data-filter-type="${type}"]`).forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('tr.story-row');
+            let visibleCount = 0;
+
+            rows.forEach((row, idx) => {
+                const matchStatus = activeFilters.status === 'all' || row.dataset.status === activeFilters.status;
+                const matchSev = activeFilters.severity === 'all' || row.dataset.severity === activeFilters.severity;
+                const matchMod = activeFilters.module === 'all' || row.dataset.module === activeFilters.module;
+                const matchSearch = !query || row.dataset.search.includes(query);
+
+                const detailRow = document.getElementById(`detail-${idx}`);
+                if (matchStatus && matchSev && matchMod && matchSearch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                    if (detailRow) detailRow.classList.remove('show');
+                    const toggle = row.querySelector('.btn-toggle');
+                    if (toggle) toggle.classList.remove('open');
+                }
+            });
+
+            document.getElementById('emptyState').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        function toggleDetail(detailId, rowEl) {
+            const detailRow = document.getElementById(detailId);
+            const btn = rowEl.querySelector('.btn-toggle');
+            if (!detailRow) return;
+            const isOpen = detailRow.classList.toggle('show');
+            if (btn) btn.classList.toggle('open', isOpen);
+        }
+
+        function copyJiraMarkdown(event, textareaId, btnEl) {
+            event.stopPropagation();
+            const textarea = document.getElementById(textareaId);
+            if (!textarea) return;
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                const original = btnEl.textContent;
+                btnEl.textContent = '✅ Zkopírováno!';
+                btnEl.classList.add('copied');
+                setTimeout(() => {
+                    btnEl.textContent = original;
+                    btnEl.classList.remove('copied');
+                }, 1800);
+            });
+        }
+    </script>
+</body>
+</html>

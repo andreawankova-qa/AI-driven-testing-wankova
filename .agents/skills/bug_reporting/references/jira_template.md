@@ -17,10 +17,11 @@ Tato šablona definuje povinnou strukturu pro hlášení incidentů a chyb v pro
 * **Závažnost (Severity):** <Critical / High / Medium / Low> (<Stručné technické odůvodnění dle matice>)
 * **Priorita (Priority):** <High / Medium / Low> (<Stručné byznysové odůvodnění dle matice>)
 * **Reprodukovatelnost:** <Vždy (100 %) / Nahodile (Intermittent / Flaky) / Pouze jednou>
+* **Ověření v prohlížeči:** <Reprodukováno / Nereprodukováno> (<DD. MM. RRRR>)
 * **Vázané User Stories:** 
   - [`US-XX: <Název User Story>`](požadavky_ust_podle_src.md#us-xx-...)
 * **Související Test Casy:** 
-  - `TC-XX-MOD` (v [`tests/<modul>/test_<soubor>.py`](../tests/<modul>/test_<soubor>.py))
+  - `TC-XX-MOD` (v [`tests/<modul>/test_<soubor>.py`](../tests/<modul>/test_<soubor>.py), testovací funkce `test_<nazev_testu>`)
 * **Prostředí:** Testovací prostředí (`http://testovani.kitner.cz`), Browser: Chromium / Playwright
 * **Nahlásil:** Andrea Wanková
 * **Datum nálezu:** <DD. MM. RRRR>

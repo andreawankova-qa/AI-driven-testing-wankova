@@ -1,9 +1,9 @@
 # 📋 Přehled automatizovaných testů (Test Steps & Checks Overview)
 
 > **Automaticky vygenerovaná živá dokumentace testovací sady Playwright & Pytest.**  
-> *Tento dokument mapuje všech **59** automatizovaných testů v projektu, jejich hierarchii, konkrétní uživatelské kroky, formulářové vstupy a veškeré prováděné kontroly (Web-First assertions).*
+> *Tento dokument mapuje všech **58** automatizovaných testů v projektu, jejich hierarchii, konkrétní uživatelské kroky, formulářové vstupy a veškeré prováděné kontroly (Web-First assertions).*
 
-*Poslední aktualizace: **10. 11. 2026, 12:25:04** | Zdrojové testy: `tests/**/*.py`*
+*Poslední aktualizace: **23. 11. 2026, 14:08:11** | Zdrojové testy: `tests/**/*.py`*
 
 ---
 
@@ -11,23 +11,23 @@
 
 | Metrika | Hodnota | Poznámka |
 | :--- | :---: | :--- |
-| **Celkem automatizovaných testů (AT)** | **59** | Unikátní implementované testovací metody |
+| **Celkem automatizovaných testů (AT)** | **58** | Unikátní implementované testovací metody |
 | **Pokrytých doménových modulů** | **7** | AUTH, CRS, ENR, LEC, NAV, PRF, SEC |
-| **Kritické scénáře (Smoke / P1)** | **26** | `@pytest.mark.smoke` – rychlá regrese jádra |
+| **Kritické scénáře (Smoke / P1)** | **25** | `@pytest.mark.smoke` – rychlá regrese jádra |
 | **Regresní a validační testy** | **33** | `@pytest.mark.regression` – edge cases, chyby, limity |
-| **Evidované defekty (`xfail`)** | **9** | Očekávaně selhávající testy navázané na JIRA tickety |
-| **Celkový počet akčních kroků** | **303** | Navigace, kliknutí, formuláře, příprava |
-| **Celkový počet ověření a kontrol** | **244** | Playwright `expect()` web-first aserce |
+| **Evidované defekty (`xfail`)** | **12** | Očekávaně selhávající testy navázané na JIRA tickety |
+| **Celkový počet akčních kroků** | **289** | Navigace, kliknutí, formuláře, příprava |
+| **Celkový počet ověření a kontrol** | **243** | Playwright `expect()` web-first aserce |
 
 ### 🧭 Rychlá navigace po modulech
 
-- [🔐 **Autentizace a správa sezení (AUTH)**](#modul-auth) – `28 testů` (kroků: 145, kontrol: 96)
+- [🔐 **Autentizace a správa sezení (AUTH)**](#modul-auth) – `27 testů` (kroků: 132, kontrol: 94)
 - [📚 **Katalog kurzů a detail běhů (CRS)**](#modul-crs) – `5 testů` (kroků: 18, kontrol: 29)
 - [📝 **Zápis na kurz a Moje kurzy (ENR)**](#modul-enr) – `6 testů` (kroků: 39, kontrol: 45)
 - [🎓 **Lektorská správa kurzů (LEC)**](#modul-lec) – `8 testů` (kroků: 40, kontrol: 44)
 - [🧭 **Navigace a integrace stránek (NAV)**](#modul-nav) – `3 testů` (kroků: 14, kontrol: 8)
 - [👤 **Uživatelský profil a nástěnka (PRF)**](#modul-prf) – `4 testů` (kroků: 20, kontrol: 11)
-- [🛡️ **Bezpečnost, RBAC a architektura (SEC)**](#modul-sec) – `5 testů` (kroků: 27, kontrol: 11)
+- [🛡️ **Bezpečnost, RBAC a architektura (SEC)**](#modul-sec) – `5 testů` (kroků: 26, kontrol: 12)
 
 ---
 
@@ -37,7 +37,6 @@
 | :--- | :--- | :---: | :---: | :---: | :---: | :--- |
 | [`TC-01-AUTH`](#tc-01-auth-sp-n-registrace-nov-ho-u-ivatele-a-kontrola-maskov-n-hesel) | Úspěšná registrace nového uživatele a kontrola maskování hesel. | `AUTH` | 🔥 Smoke | 5 | 6 | `tests/auth/test_register.py` |
 | [`TC-01-AUTH`](#tc-01-auth-registrace-nov-ho-u-ivatele-odhl-en-a-n-sledn-p-ihl-en-kl-vesou-enter) | Registrace nového uživatele, odhlášení a následné přihlášení klávesou Enter. | `AUTH` | 🔥 Smoke | 12 | 3 | `tests/auth/test_register.py` |
-| [`TC-01-AUTH`](#tc-01-auth-sp-n-registrace-z-kaznick-ho-tu-happy-path) | Úspěšná registrace zákaznického účtu (Happy Path). | `AUTH` | 🔥 Smoke | 5 | 8 | `tests/auth/test_register_experiment.py` |
 | [`TC-02-AUTH`](#tc-02-auth-negativn-test-registrace-pokus-o-registraci-s-ji-obsazen-m-e-mailem) | Negativní test registrace – pokus o registraci s již obsazeným e-mailem. | `AUTH` | 🛡️ Regression | 3 | 3 | `tests/auth/test_register.py` |
 | [`TC-03-AUTH`](#tc-03-auth-negativn-test-registrace-neshoda-hesel-a-pr-zdn-potvrzen) | Negativní test registrace – neshoda hesel a prázdné potvrzení. | `AUTH` | 🛡️ Regression | 4 | 3 | `tests/auth/test_register.py` |
 | [`TC-04-AUTH`](#tc-04-auth-validace-povinn-ch-pol-p-i-odesl-n-pr-zdn-ho-formul-e) | Validace povinných polí při odeslání prázdného formuláře. | `AUTH` | 🛡️ Regression | 3 | 7 | `tests/auth/test_register.py` |
@@ -47,8 +46,8 @@
 | [`TC-06-AUTH`](#tc-06-auth-ov-en-sp-n-ho-p-ihl-en-u-ivatele-happy-path-a-jeho-varianty) | Ověření úspěšného přihlášení uživatele (Happy Path a jeho varianty). | `AUTH` | 🔥 Smoke | 9 | 5 | `tests/auth/test_login.py` |
 | [`TC-06-AUTH`](#tc-06-auth-kontrola-metadat-str-nky-title-a-bezpe-nostn-ho-maskov-n-hesla) | Kontrola metadat stránky (<title>) a bezpečnostního maskování hesla. | `AUTH` | 🔥 Smoke | 2 | 2 | `tests/auth/test_login.py` |
 | [`TC-06-AUTH`](#tc-06-auth-kontrola-v-choz-ho-stavu-ui-prvk-p-ihla-ovac-ho-formul-e) | Kontrola výchozího stavu UI prvků přihlašovacího formuláře. | `AUTH` | 🔥 Smoke | 2 | 5 | `tests/auth/test_login.py` |
-| [`TC-07-AUTH`](#tc-07-auth-negativn-a-valida-n-test-pro-chybn-i-ne-pln-p-ihla-ovac-daje) | Negativní a validační test pro chybné či neúplné přihlašovací údaje. | `AUTH` | 🔥 Smoke | 10 | 2 | `tests/auth/test_login.py` |
-| [`TC-08-AUTH`](#tc-08-auth-data-driven-ov-en-zamezen-odesl-n-p-i-neplatn-ch-form-tech-e-mailu-ze-souboru-data-invalid-emails-json) | Data-driven ověření zamezení odeslání při neplatných formátech e-mailu (ze souboru data/invalid_emails.json). | `AUTH` | 🛡️ Regression | 5 | 1 | `tests/auth/test_login.py` |
+| [`TC-07-AUTH`](#tc-07-auth-negativn-a-valida-n-test-pro-chybn-i-ne-pln-p-ihla-ovac-daje) | Negativní a validační test pro chybné či neúplné přihlašovací údaje. | `AUTH` | 🔥 Smoke | 6 | 3 | `tests/auth/test_login.py` |
+| [`TC-08-AUTH`](#tc-08-auth-data-driven-ov-en-zamezen-odesl-n-p-i-neplatn-ch-form-tech-e-mailu-ze-souboru-data-invalid-emails-json) | Data-driven ověření zamezení odeslání při neplatných formátech e-mailu (ze souboru data/invalid_emails.json). | `AUTH` | 🛡️ Regression | 5 | 3 | `tests/auth/test_login.py` |
 | [`TC-09-AUTH`](#tc-09-auth-ov-en-perzistence-p-ihl-en-po-obnoven-str-nky-reload-f5) | Ověření perzistence přihlášení po obnovení stránky (Reload / F5). | `AUTH` | 🔥 Smoke | 2 | 2 | `tests/auth/test_logout.py` |
 | [`TC-10-AUTH`](#tc-10-auth-navigace-kl-vesnic-tab-enter-ve-formul-i) | Navigace klávesnicí (Tab + Enter) ve formuláři. | `AUTH` | 🛡️ Regression | 8 | 3 | `tests/auth/test_login.py` |
 | [`TC-11-AUTH`](#tc-11-auth-e2e-test-kompletn-ho-ivotn-ho-cyklu-login-logout) | E2E test kompletního životního cyklu (Login -> Logout). | `AUTH` | 🔥 Smoke | 2 | 2 | `tests/auth/test_logout.py` |
@@ -58,11 +57,11 @@
 | [`TC-15-AUTH`](#tc-15-auth-pokus-o-zm-nu-hesla-s-neplatn-m-nebo-expirovan-m-tokenem) | Pokus o změnu hesla s neplatným nebo expirovaným tokenem. | `AUTH` | 🛡️ Regression | 2 | 2 | `tests/auth/test_password_reset.py` |
 | [`TC-16-AUTH`](#tc-16-auth-zm-na-hesla-s-neshodn-m-potvrzen-m-nov-ho-hesla) | Změna hesla s neshodným potvrzením nového hesla. | `AUTH` | 🛡️ Regression (⚠️ BR-03) | 3 | 3 | `tests/auth/test_password_reset.py` |
 | [`TC-16-AUTH`](#tc-16-auth-zm-na-hesla-s-heslem-nespl-uj-c-m-minim-ln-d-lku-8-znak) | Změna hesla s heslem nesplňujícím minimální délku 8 znaků. | `AUTH` | 🛡️ Regression (⚠️ BR-03) | 3 | 3 | `tests/auth/test_password_reset.py` |
-| [`TC-17-AUTH`](#tc-17-auth-sp-n-ov-en-e-mailu-p-es-platn-odkaz) | Úspěšné ověření e-mailu přes platný odkaz. | `AUTH` | 🛡️ Regression | 2 | 1 | `tests/auth/test_password_reset.py` |
-| [`TC-18-AUTH`](#tc-18-auth-pokus-o-ov-en-e-mailu-s-neplatn-m-odkazem) | Pokus o ověření e-mailu s neplatným odkazem. | `AUTH` | 🛡️ Regression | 2 | 1 | `tests/auth/test_password_reset.py` |
-| [`TC-19-AUTH`](#tc-19-auth-znovuzasl-n-ov-ovac-ho-e-mailu-a-asov-limit) | Znovuzaslání ověřovacího e-mailu a časový limit. | `AUTH` | 🛡️ Regression | 2 | 1 | `tests/auth/test_password_reset.py` |
-| [`TC-20-AUTH`](#tc-20-auth-do-asn-blokace-po-5-ne-sp-n-ch-pokusech-o-p-ihl-en) | Dočasná blokace po 5 neúspěšných pokusech o přihlášení. | `AUTH` | 🔥 Smoke | 11 | 4 | `tests/auth/test_login.py` |
-| [`TC-21-AUTH`](#tc-21-auth-vynulov-n-po-tadla-ne-sp-ch-po-sp-n-m-p-ihl-en) | Vynulování počítadla neúspěchů po úspěšném přihlášení. | `AUTH` | 🛡️ Regression | 16 | 8 | `tests/auth/test_login.py` |
+| [`TC-17-AUTH`](#tc-17-auth-sp-n-ov-en-e-mailu-p-es-platn-odkaz) | Úspěšné ověření e-mailu přes platný odkaz. | `AUTH` | 🛡️ Regression (⚠️ BR-05) | 2 | 2 | `tests/auth/test_password_reset.py` |
+| [`TC-18-AUTH`](#tc-18-auth-pokus-o-ov-en-e-mailu-s-neplatn-m-odkazem) | Pokus o ověření e-mailu s neplatným odkazem. | `AUTH` | 🛡️ Regression (⚠️ BR-05) | 2 | 2 | `tests/auth/test_password_reset.py` |
+| [`TC-19-AUTH`](#tc-19-auth-znovuzasl-n-ov-ovac-ho-e-mailu-a-asov-limit) | Znovuzaslání ověřovacího e-mailu a časový limit. | `AUTH` | 🛡️ Regression (⚠️ BR-05) | 2 | 2 | `tests/auth/test_password_reset.py` |
+| [`TC-20-AUTH`](#tc-20-auth-do-asn-blokace-po-5-ne-sp-n-ch-pokusech-o-p-ihl-en) | Dočasná blokace po 5 neúspěšných pokusech o přihlášení. | `AUTH` | 🔥 Smoke | 9 | 4 | `tests/auth/test_login.py` |
+| [`TC-21-AUTH`](#tc-21-auth-vynulov-n-po-tadla-ne-sp-ch-po-sp-n-m-p-ihl-en) | Vynulování počítadla neúspěchů po úspěšném přihlášení. | `AUTH` | 🛡️ Regression | 14 | 8 | `tests/auth/test_login.py` |
 | [`TC-22-CRS`](#tc-22-crs-zobrazen-katalogu-kurz-pro-nep-ihl-en-ho-n-v-t-vn-ka) | Zobrazení katalogu kurzů pro nepřihlášeného návštěvníka. | `CRS` | 🔥 Smoke | 2 | 4 | `tests/courses/test_courses.py` |
 | [`TC-23-CRS`](#tc-23-crs-ov-en-zobrazen-atribut-kurzu-v-katalogu) | Ověření zobrazení atributů kurzu v katalogu. | `CRS` | 🛡️ Regression | 3 | 7 | `tests/courses/test_courses.py` |
 | [`TC-24-CRS`](#tc-24-crs-zobrazen-detailu-kurzu-a-seznamu-vypsan-ch-term-n) | Zobrazení detailu kurzu a seznamu vypsaných termínů. | `CRS` | 🔥 Smoke | 4 | 10 | `tests/courses/test_courses.py` |
@@ -93,7 +92,7 @@
 | [`TC-44-SEC`](#tc-44-sec-z-kaz-lektorsk-ch-operac-pro-u-ivatele-v-roli-z-kazn-ka) | Zákaz lektorských operací pro uživatele v roli zákazníka. | `SEC` | 🔥 Smoke (⚠️ BR-01) | 4 | 1 | `tests/security/test_security.py` |
 | [`TC-45-SEC`](#tc-45-sec-z-kaz-z-pisu-na-kurz-pro-u-ivatele-v-roli-lektora) | Zákaz zápisu na kurz pro uživatele v roli lektora. | `SEC` | 🛡️ Regression | 2 | 2 | `tests/security/test_security.py` |
 | [`TC-46-SEC`](#tc-46-sec-ochrana-formul-csrf-tokenem-p-tomnost-xsrf-token) | Ochrana formulářů CSRF tokenem (přítomnost XSRF-TOKEN). | `SEC` | 🔥 Smoke | 6 | 1 | `tests/security/test_security.py` |
-| [`TC-47-SEC`](#tc-47-sec-regenerace-session-id-p-i-p-ihl-en-a-odhl-en-ochrana-proti-session-fixation) | Regenerace session ID při přihlášení a odhlášení (ochrana proti Session Fixation). | `SEC` | 🛡️ Regression | 11 | 4 | `tests/security/test_security.py` |
+| [`TC-47-SEC`](#tc-47-sec-regenerace-session-id-p-i-p-ihl-en-a-odhl-en-ochrana-proti-session-fixation) | Regenerace session ID při přihlášení a odhlášení (ochrana proti Session Fixation). | `SEC` | 🛡️ Regression | 10 | 5 | `tests/security/test_security.py` |
 
 ---
 
@@ -102,7 +101,7 @@
 <a id="modul-auth"></a>
 ### 🔐 Modul: Autentizace a správa sezení (AUTH)
 
-*Počet testů v modulu: **28** | Celkem akcí: **145** | Celkem kontrol: **96***
+*Počet testů v modulu: **27** | Celkem akcí: **132** | Celkem kontrol: **94***
 
 <a id="tc-01-auth-sp-n-registrace-nov-ho-u-ivatele-a-kontrola-maskov-n-hesel"></a>
 #### `TC-01-AUTH`: Úspěšná registrace nového uživatele a kontrola maskování hesel.
@@ -181,45 +180,6 @@
    `expect(page).to_have_url(courses_page.URL, timeout=10000)`
 15. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.logout_button` na stránce
    `expect(courses_page.logout_button).to_be_visible()`
-
-<a id="tc-01-auth-sp-n-registrace-z-kaznick-ho-tu-happy-path"></a>
-#### `TC-01-AUTH`: Úspěšná registrace zákaznického účtu (Happy Path).
-
-| Vlastnost | Hodnota |
-| :--- | :--- |
-| **Kód funkce** | `test_tc01_auth_successful_registration()` |
-| **Testovací třída** | `TestRegistrationExperiment` |
-| **Zdrojový soubor** | [`tests/auth/test_register_experiment.py:20`](tests/auth/test_register_experiment.py#L20) |
-| **Pytest Markery** | `@auth`, `@smoke` |
-
-##### 👣 Postup testu (Kroky & Kontroly):
-
-1. **⚙️ Příprava:** Inicializace Page Objectu `RegisterPage(page)` do proměnné `register_page` — *(Arrange – Příprava testovacího prostředí, Page Objectů a dynamických dat)*
-   `register_page = RegisterPage(page)`
-2. **⚙️ Příprava:** Inicializace Page Objectu `HomePage(page)` do proměnné `home_page`
-   `home_page = HomePage(page)`
-3. **🎲 Test Data:** Dynamické generování testovacích dat `generate_random_user()` -> `new_user`
-   `new_user = generate_random_user(name_prefix="Jan Novák")`
-4. **🌐 Navigace:** Otevření stránky `register_page`
-   `register_page.open()`
-5. **🔍 Kontrola:** Ověření viditelnosti prvku `register_page.name_input` na stránce — *(Krok 1: Kontrola viditelnosti polí formuláře)*
-   `expect(register_page.name_input).to_be_visible()`
-6. **🔍 Kontrola:** Ověření viditelnosti prvku `register_page.email_input` na stránce
-   `expect(register_page.email_input).to_be_visible()`
-7. **🔍 Kontrola:** Ověření viditelnosti prvku `register_page.password_input` na stránce
-   `expect(register_page.password_input).to_be_visible()`
-8. **🔍 Kontrola:** Ověření viditelnosti prvku `register_page.password_again_input` na stránce
-   `expect(register_page.password_again_input).to_be_visible()`
-9. **▶️ Krok:** Vyvolání akce `register_page.register()` — *(Act – Vyplnění údajů a odeslání registračního formuláře (Kroky 2-6))*
-   `register_page.register( name=new_user["name"], email=new_user["email"], password=new_user["password"], password_again=new_user["password"], )`
-10. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: home_page.URL) — *(Assert – 3úrovňová validační pyramida (Routing, Session, Data State) | 1. Úroveň: Routing – Přesměrování na domovskou stránku /home)*
-   `expect(page).to_have_url(home_page.URL)`
-11. **🔍 Kontrola:** Ověření viditelnosti prvku `home_page.navbar.logout_button` na stránce — *(2. Úroveň: Session State – Uživatel je přihlášen (zobrazeno tlačítko odhlášení))*
-   `expect(home_page.navbar.logout_button).to_be_visible()`
-12. **🔍 Kontrola:** Ověření viditelnosti prvku `home_page.welcome_section` na stránce — *(3. Úroveň: Data State & UI Feedback – Uvítací zpráva s personalizovaným jménem)*
-   `expect(home_page.welcome_section).to_be_visible()`
-13. **🔍 Kontrola:** Ověření, že text prvku `home_page.welcome_section` obsahuje ...
-   `expect(home_page.welcome_section).to_contain_text(f"Vítej uživateli {new_user['name']}!")`
 
 <a id="tc-02-auth-negativn-test-registrace-pokus-o-registraci-s-ji-obsazen-m-e-mailem"></a>
 #### `TC-02-AUTH`: Negativní test registrace – pokus o registraci s již obsazeným e-mailem.
@@ -456,7 +416,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc06_auth_title_and_password_masking()` |
 | **Testovací třída** | `TestLogin` |
-| **Zdrojový soubor** | [`tests/auth/test_login.py:154`](tests/auth/test_login.py#L154) |
+| **Zdrojový soubor** | [`tests/auth/test_login.py:147`](tests/auth/test_login.py#L147) |
 | **Pytest Markery** | `@auth`, `@smoke` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -477,7 +437,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc06_auth_form_ui_elements_state()` |
 | **Testovací třída** | `TestLogin` |
-| **Zdrojový soubor** | [`tests/auth/test_login.py:163`](tests/auth/test_login.py#L163) |
+| **Zdrojový soubor** | [`tests/auth/test_login.py:156`](tests/auth/test_login.py#L156) |
 | **Pytest Markery** | `@auth`, `@smoke` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -514,35 +474,20 @@
    `login_page = LoginPage(page)`
 2. **🌐 Navigace:** Otevření stránky `login_page`
    `login_page.open()`
-3. **🔀 Větvení:** Podmíněná větev: pokud platí `email`
-   `if email:`
-  1. **✍️ Vstup:** Vyplnění pole `email` hodnotou email
-     `login_page.fill_email(email)`
-4. **🔀 Větvení:** Podmíněná větev: pokud platí `password`
-   `if password:`
-  1. **✍️ Vstup:** Vyplnění pole `password` hodnotou password
-     `login_page.fill_password(password)`
+3. **✍️ Vstup:** Vyplnění pole `email` hodnotou email
+   `login_page.fill_email(email)`
+4. **✍️ Vstup:** Vyplnění pole `password` hodnotou password
+   `login_page.fill_password(password)`
 5. **🖱️ Kliknutí:** Kliknutí na prvek / tlačítko `login_page_login`
    `login_page.click_login()`
 6. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL)
    `expect(page).to_have_url(login_page.URL)`
-7. **🔀 Větvení:** Podmíněná větev: pokud platí `error_field ...`
-   `if error_field ...:`
-  1. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
-     `expect(login_page.email_error).to_be_visible(timeout=5000)`
-  2. **🔀 Větvení:** Podmíněná větev: pokud platí `expected_error_text`
-     `if expected_error_text:`
-    1. **🔍 Kontrola:** Ověření přesného textu prvku `login_page.email_error` (očekáváno: expected_error_text)
-       `expect(login_page.email_error).to_have_text(expected_error_text)`
-   *Jinak:*
-  1. **🔀 Větvení:** Podmíněná větev: pokud platí `error_field ...`
-     `if error_field ...:`
-    1. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.password_error` na stránce
-       `expect(login_page.password_error).to_be_visible(timeout=5000)`
-    2. **🔀 Větvení:** Podmíněná větev: pokud platí `expected_error_text`
-       `if expected_error_text:`
-      1. **🔍 Kontrola:** Ověření přesného textu prvku `login_page.password_error` (očekáváno: expected_error_text)
-         `expect(login_page.password_error).to_have_text(expected_error_text)`
+7. **⚙️ Příprava:** Nastavení lokální proměnné `error_locator` = `getattr(login_page, error_field)`
+   `error_locator = getattr(login_page, error_field)`
+8. **🔍 Kontrola:** Ověření viditelnosti prvku `error_locator` na stránce
+   `expect(error_locator).to_be_visible(timeout=5000)`
+9. **🔍 Kontrola:** Ověření přesného textu prvku `error_locator` (očekáváno: expected_error_text)
+   `expect(error_locator).to_have_text(expected_error_text)`
 
 <a id="tc-08-auth-data-driven-ov-en-zamezen-odesl-n-p-i-neplatn-ch-form-tech-e-mailu-ze-souboru-data-invalid-emails-json"></a>
 #### `TC-08-AUTH`: Data-driven ověření zamezení odeslání při neplatných formátech e-mailu (ze souboru data/invalid_emails.json).
@@ -551,7 +496,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc08_auth_invalid_email_format_validation()` |
 | **Testovací třída** | `TestLogin` |
-| **Zdrojový soubor** | [`tests/auth/test_login.py:137`](tests/auth/test_login.py#L137) |
+| **Zdrojový soubor** | [`tests/auth/test_login.py:128`](tests/auth/test_login.py#L128) |
 | **Pytest Markery** | `@auth`, `@regression`, `@parametrize` |
 | **Data-driven varianty** | Parametry: `'item'`, Scénáře: `...` |
 
@@ -567,8 +512,12 @@
    `login_page.fill_password("PlatneHeslo123")`
 5. **🖱️ Kliknutí:** Kliknutí na prvek / tlačítko `login_page_login`
    `login_page.click_login()`
-6. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL) — *(Uživatel musí zůstat na přihlašovací stránce (prohlížeč zamezí odeslání nevalidního e-mailu))*
+6. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL) — *(Uživatel musí zůstat nepřihlášen na přihlašovací stránce (formulář se neodešle / přihlášení neproběhne))*
    `expect(page).to_have_url(login_page.URL)`
+7. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.login_button` na stránce
+   `expect(login_page.login_button).to_be_visible()`
+8. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.navbar.login_link` na stránce
+   `expect(login_page.navbar.login_link).to_be_visible()`
 
 <a id="tc-09-auth-ov-en-perzistence-p-ihl-en-po-obnoven-str-nky-reload-f5"></a>
 #### `TC-09-AUTH`: Ověření perzistence přihlášení po obnovení stránky (Reload / F5).
@@ -598,7 +547,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc10_auth_keyboard_navigation_tab_and_enter()` |
 | **Testovací třída** | `TestLogin` |
-| **Zdrojový soubor** | [`tests/auth/test_login.py:262`](tests/auth/test_login.py#L262) |
+| **Zdrojový soubor** | [`tests/auth/test_login.py:255`](tests/auth/test_login.py#L255) |
 | **Pytest Markery** | `@auth`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -654,7 +603,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc12_auth_forgot_password_request_submission()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:24`](tests/auth/test_password_reset.py#L24) |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:25`](tests/auth/test_password_reset.py#L25) |
 | **Pytest Markery** | `@auth`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -681,7 +630,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc13_auth_forgot_password_invalid_or_empty_email_validation()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:38`](tests/auth/test_password_reset.py#L38) |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:39`](tests/auth/test_password_reset.py#L39) |
 | **Pytest Markery** | `@auth`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -710,7 +659,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc14_auth_successful_password_reset_with_valid_token()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:62`](tests/auth/test_password_reset.py#L62) |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:63`](tests/auth/test_password_reset.py#L63) |
 | **Pytest Markery** | `@auth`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **BR-03: Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password** |
 
@@ -740,7 +689,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc15_auth_password_reset_invalid_or_expired_token()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:82`](tests/auth/test_password_reset.py#L82) |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:83`](tests/auth/test_password_reset.py#L83) |
 | **Pytest Markery** | `@auth`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -761,7 +710,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc16_auth_password_reset_mismatched_confirmation()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:98`](tests/auth/test_password_reset.py#L98) |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:99`](tests/auth/test_password_reset.py#L99) |
 | **Pytest Markery** | `@auth`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **BR-03: Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password** |
 
@@ -787,7 +736,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc16_auth_password_reset_short_password()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:114`](tests/auth/test_password_reset.py#L114) |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:115`](tests/auth/test_password_reset.py#L115) |
 | **Pytest Markery** | `@auth`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **BR-03: Chybějící klientské rozhraní formuláře pro nastavení nového hesla na /reset-password** |
 
@@ -813,8 +762,9 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc17_auth_email_verification_success()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:130`](tests/auth/test_password_reset.py#L130) |
-| **Pytest Markery** | `@auth`, `@regression` |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:135`](tests/auth/test_password_reset.py#L135) |
+| **Pytest Markery** | `@auth`, `@regression`, `@xfail` |
+| **⚠️ Evidovaný defekt (xfail)** | **BR-05: Stránka /overeni-emailu vrací prázdný kontejner bez rozhraní pro potvrzení ověření e-mailu** |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
 
@@ -822,8 +772,10 @@
    `verify_page = EmailVerificationPage(page)`
 2. **▶️ Krok:** Vyvolání akce `verify_page.open_verification_link()`
    `verify_page.open_verification_link(token="platny_verifikacni_token_123")`
-3. **🔍 Kontrola:** Ověření viditelnosti prvku `verify_page.container` na stránce — *(Ověření, že systém přijal požadavek a zobrazil stránku)*
+3. **🔍 Kontrola:** Ověření viditelnosti prvku `verify_page.container` na stránce — *(Ověření zobrazení potvrzující zprávy o úspěšném ověření (nejen prázdného kontejneru))*
    `expect(verify_page.container).to_be_visible()`
+4. **🔍 Kontrola:** Ověření, že text prvku `verify_page.container` obsahuje re.compile('ověř|úspěš|potvrz', re.IGNORECASE)
+   `expect(verify_page.container).to_contain_text(re.compile(r"ověř|úspěš|potvrz", re.IGNORECASE))`
 
 <a id="tc-18-auth-pokus-o-ov-en-e-mailu-s-neplatn-m-odkazem"></a>
 #### `TC-18-AUTH`: Pokus o ověření e-mailu s neplatným odkazem.
@@ -832,8 +784,9 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc18_auth_email_verification_invalid_link()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:139`](tests/auth/test_password_reset.py#L139) |
-| **Pytest Markery** | `@auth`, `@regression` |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:149`](tests/auth/test_password_reset.py#L149) |
+| **Pytest Markery** | `@auth`, `@regression`, `@xfail` |
+| **⚠️ Evidovaný defekt (xfail)** | **BR-05: Stránka /overeni-emailu vrací prázdný kontejner bez chybového hlášení pro neplatný token** |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
 
@@ -841,8 +794,10 @@
    `verify_page = EmailVerificationPage(page)`
 2. **▶️ Krok:** Vyvolání akce `verify_page.open_verification_link()`
    `verify_page.open_verification_link(token="neplatny_token_xyz")`
-3. **🔍 Kontrola:** Ověření viditelnosti prvku `verify_page.container` na stránce
+3. **🔍 Kontrola:** Ověření viditelnosti prvku `verify_page.container` na stránce — *(Ověření zamítnutí a zobrazení chybové informace o neplatném odkazu)*
    `expect(verify_page.container).to_be_visible()`
+4. **🔍 Kontrola:** Ověření, že text prvku `verify_page.container` obsahuje re.compile('neplatn|expiro|chyb', re.IGNORECASE)
+   `expect(verify_page.container).to_contain_text(re.compile(r"neplatn|expiro|chyb", re.IGNORECASE))`
 
 <a id="tc-19-auth-znovuzasl-n-ov-ovac-ho-e-mailu-a-asov-limit"></a>
 #### `TC-19-AUTH`: Znovuzaslání ověřovacího e-mailu a časový limit.
@@ -851,8 +806,9 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc19_auth_resend_verification_email_rate_limit()` |
 | **Testovací třída** | `TestPasswordReset` |
-| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:147`](tests/auth/test_password_reset.py#L147) |
-| **Pytest Markery** | `@auth`, `@regression` |
+| **Zdrojový soubor** | [`tests/auth/test_password_reset.py:163`](tests/auth/test_password_reset.py#L163) |
+| **Pytest Markery** | `@auth`, `@regression`, `@xfail` |
+| **⚠️ Evidovaný defekt (xfail)** | **BR-05: Stránka /email/verify vrací prázdný kontejner bez UI pro znovuzaslání ověřovacího e-mailu** |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
 
@@ -860,8 +816,10 @@
    `verify_page = EmailVerificationPage(page)`
 2. **▶️ Krok:** Vyvolání akce `verify_page.open_prompt()`
    `verify_page.open_prompt()`
-3. **🔍 Kontrola:** Ověření viditelnosti prvku `verify_page.container` na stránce
+3. **🔍 Kontrola:** Ověření viditelnosti prvku `verify_page.container` na stránce — *(Ověření zobrazení výzvy a obsahu pro znovuzaslání ověřovacího e-mailu)*
    `expect(verify_page.container).to_be_visible()`
+4. **🔍 Kontrola:** Ověření, že text prvku `verify_page.container` obsahuje re.compile('odeslat|ověř|e-mail', re.IGNORECASE)
+   `expect(verify_page.container).to_contain_text(re.compile(r"odeslat|ověř|e-mail", re.IGNORECASE))`
 
 <a id="tc-20-auth-do-asn-blokace-po-5-ne-sp-n-ch-pokusech-o-p-ihl-en"></a>
 #### `TC-20-AUTH`: Dočasná blokace po 5 neúspěšných pokusech o přihlášení.
@@ -870,40 +828,36 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc20_auth_temporary_lockout_after_five_failed_logins()` |
 | **Testovací třída** | `TestLogin` |
-| **Zdrojový soubor** | [`tests/auth/test_login.py:179`](tests/auth/test_login.py#L179) |
+| **Zdrojový soubor** | [`tests/auth/test_login.py:172`](tests/auth/test_login.py#L172) |
 | **Pytest Markery** | `@auth`, `@smoke` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
 
-1. **⚙️ Příprava:** Inicializace Page Objectu `RegisterPage(page)` do proměnné `register_page` — *(===================================================================== | 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů) | =====================================================================)*
-   `register_page = RegisterPage(page)`
-2. **⚙️ Příprava:** Inicializace Page Objectu `LoginPage(page)` do proměnné `login_page`
+1. **⚙️ Příprava:** Inicializace Page Objectu `LoginPage(page)` do proměnné `login_page` — *(===================================================================== | 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů) | =====================================================================)*
    `login_page = LoginPage(page)`
-3. **🎲 Test Data:** Dynamické generování testovacích dat `generate_random_user()` -> `user`
+2. **🎲 Test Data:** Dynamické generování testovacích dat `generate_random_user()` -> `user`
    `user = generate_random_user(name_prefix="RateLimit P1")`
-4. **🌐 Navigace:** Otevření stránky `register_page` — *(Registrace a odhlášení nového uživatele)*
-   `register_page.open()`
-5. **▶️ Krok:** Vyvolání akce `register_page.register(user['name'], user['email'], user['password'])`
-   `register_page.register(user["name"], user["email"], user["password"])`
-6. **🚪 Odhlášení:** Odhlášení uživatele z portálu
+3. **▶️ Krok:** Vyvolání akce `register_and_login_user(page, user)` — *(Registrace a odhlášení nového uživatele)*
+   `register_and_login_user(page, user)`
+4. **🚪 Odhlášení:** Odhlášení uživatele z portálu
    `logout_user(page)`
-7. **🌐 Navigace:** Otevření stránky `login_page`
+5. **🌐 Navigace:** Otevření stránky `login_page`
    `login_page.open()`
-8. **⚙️ Příprava:** Nastavení lokální proměnné `invalid_password` = `'ChybneHeslo999!'`
+6. **⚙️ Příprava:** Nastavení lokální proměnné `invalid_password` = `'ChybneHeslo999!'`
    `invalid_password = "ChybneHeslo999!"`
-9. **🔁 Cyklus:** Iterace kroků (`pro _ v range(5)`) — *(===================================================================== | 2. ACT (5 neúspěšných pokusů za sebou) | =====================================================================)*
+7. **🔁 Cyklus:** Iterace kroků (`pro _ v range(5)`) — *(===================================================================== | 2. ACT (5 neúspěšných pokusů za sebou) | =====================================================================)*
    `for _ in range(5):`
-  1. **🔑 Autentizace:** Provedení přihlášení uživatele (user['email'], invalid_password)
-     `login_page.login(user["email"], invalid_password)`
+  1. **▶️ Krok:** Příkaz: `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
+     `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
   2. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
      `expect(login_page.email_error).to_be_visible()`
-10. **🔑 Autentizace:** Provedení přihlášení uživatele (user['email'], invalid_password) — *(6. pokus o přihlášení)*
-   `login_page.login(user["email"], invalid_password)`
-11. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL) — *(===================================================================== | 3. ASSERT (3úrovňová validace: Routing + Session + Data State) | =====================================================================)*
+8. **▶️ Krok:** Příkaz: `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)` — *(6. pokus o přihlášení)*
+   `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
+9. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL) — *(===================================================================== | 3. ASSERT (3úrovňová validace: Routing + Session + Data State) | =====================================================================)*
    `expect(page).to_have_url(login_page.URL)`
-12. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
+10. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
    `expect(login_page.email_error).to_be_visible()`
-13. **🔍 Kontrola:** Ověření, že text prvku `login_page.email_error` obsahuje re.compile('Too many login attempts.*seconds', re.IGNORECASE)
+11. **🔍 Kontrola:** Ověření, že text prvku `login_page.email_error` obsahuje re.compile('Too many login attempts.*seconds', re.IGNORECASE)
    `expect(login_page.email_error).to_contain_text(re.compile(r"Too many login attempts.*seconds", re.IGNORECASE))`
 
 <a id="tc-21-auth-vynulov-n-po-tadla-ne-sp-ch-po-sp-n-m-p-ihl-en"></a>
@@ -913,58 +867,54 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc21_auth_reset_failed_login_counter_on_success()` |
 | **Testovací třída** | `TestLogin` |
-| **Zdrojový soubor** | [`tests/auth/test_login.py:214`](tests/auth/test_login.py#L214) |
+| **Zdrojový soubor** | [`tests/auth/test_login.py:207`](tests/auth/test_login.py#L207) |
 | **Pytest Markery** | `@auth`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
 
-1. **⚙️ Příprava:** Inicializace Page Objectu `RegisterPage(page)` do proměnné `register_page` — *(===================================================================== | 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů) | =====================================================================)*
-   `register_page = RegisterPage(page)`
-2. **⚙️ Příprava:** Inicializace Page Objectu `LoginPage(page)` do proměnné `login_page`
+1. **⚙️ Příprava:** Inicializace Page Objectu `LoginPage(page)` do proměnné `login_page` — *(===================================================================== | 1. ARRANGE (Příprava izolovaného uživatele a Page Objectů) | =====================================================================)*
    `login_page = LoginPage(page)`
-3. **⚙️ Příprava:** Inicializace Page Objectu `CoursesPage(page)` do proměnné `courses_page`
+2. **⚙️ Příprava:** Inicializace Page Objectu `CoursesPage(page)` do proměnné `courses_page`
    `courses_page = CoursesPage(page)`
-4. **🎲 Test Data:** Dynamické generování testovacích dat `generate_random_user()` -> `user`
+3. **🎲 Test Data:** Dynamické generování testovacích dat `generate_random_user()` -> `user`
    `user = generate_random_user(name_prefix="RateReset P2")`
-5. **🌐 Navigace:** Otevření stránky `register_page` — *(Registrace a odhlášení nového uživatele)*
-   `register_page.open()`
-6. **▶️ Krok:** Vyvolání akce `register_page.register(user['name'], user['email'], user['password'])`
-   `register_page.register(user["name"], user["email"], user["password"])`
-7. **🚪 Odhlášení:** Odhlášení uživatele z portálu
+4. **▶️ Krok:** Vyvolání akce `register_and_login_user(page, user)` — *(Registrace a odhlášení nového uživatele)*
+   `register_and_login_user(page, user)`
+5. **🚪 Odhlášení:** Odhlášení uživatele z portálu
    `logout_user(page)`
-8. **🌐 Navigace:** Otevření stránky `login_page`
+6. **🌐 Navigace:** Otevření stránky `login_page`
    `login_page.open()`
-9. **⚙️ Příprava:** Nastavení lokální proměnné `invalid_password` = `'ChybneHeslo999!'`
+7. **⚙️ Příprava:** Nastavení lokální proměnné `invalid_password` = `'ChybneHeslo999!'`
    `invalid_password = "ChybneHeslo999!"`
-10. **🔁 Cyklus:** Iterace kroků (`pro _ v range(3)`) — *(===================================================================== | 2. ACT (3 neúspěšné pokusy + úspěšné přihlášení + odhlášení + 3 neúspěchy) | =====================================================================)*
+8. **🔁 Cyklus:** Iterace kroků (`pro _ v range(3)`) — *(===================================================================== | 2. ACT (3 neúspěšné pokusy + úspěšné přihlášení + odhlášení + 3 neúspěchy) | =====================================================================)*
    `for _ in range(3):`
-  1. **🔑 Autentizace:** Provedení přihlášení uživatele (user['email'], invalid_password)
-     `login_page.login(user["email"], invalid_password)`
+  1. **▶️ Krok:** Příkaz: `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
+     `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
   2. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
      `expect(login_page.email_error).to_be_visible()`
-11. **🔑 Autentizace:** Provedení přihlášení uživatele (user['email'], user['password']) — *(Úspěšné přihlášení vynuluje počítadlo neúspěchů)*
+9. **🔑 Autentizace:** Provedení přihlášení uživatele (user['email'], user['password']) — *(Úspěšné přihlášení vynuluje počítadlo neúspěchů)*
    `login_page.login(user["email"], user["password"])`
-12. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: courses_page.URL)
+10. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: courses_page.URL)
    `expect(page).to_have_url(courses_page.URL, timeout=10000)`
-13. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.logout_button` na stránce
+11. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.logout_button` na stránce
    `expect(courses_page.logout_button).to_be_visible()`
-14. **🚪 Odhlášení:** Odhlášení uživatele z portálu — *(Odhlášení)*
+12. **🚪 Odhlášení:** Odhlášení uživatele z portálu — *(Odhlášení)*
    `courses_page.logout()`
-15. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.login_link` na stránce
+13. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.login_link` na stránce
    `expect(courses_page.login_link).to_be_visible()`
-16. **🌐 Navigace:** Otevření stránky `login_page` — *(Další 3 neúspěšné pokusy (celkem 6 pokusů přerušených úspěchem))*
+14. **🌐 Navigace:** Otevření stránky `login_page` — *(Další 3 neúspěšné pokusy (celkem 6 pokusů přerušených úspěchem))*
    `login_page.open()`
-17. **🔁 Cyklus:** Iterace kroků (`pro _ v range(3)`)
+15. **🔁 Cyklus:** Iterace kroků (`pro _ v range(3)`)
    `for _ in range(3):`
-  1. **🔑 Autentizace:** Provedení přihlášení uživatele (user['email'], invalid_password)
-     `login_page.login(user["email"], invalid_password)`
+  1. **▶️ Krok:** Příkaz: `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
+     `with page.expect_response(lambda r: "/login" in r.url and r.request.method == "POST"): login_page.login(user["email"], invalid_password)`
   2. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
      `expect(login_page.email_error).to_be_visible()`
-18. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL) — *(===================================================================== | 3. ASSERT (Uživatel není zablokován po celkových 6 neúspěších) | =====================================================================)*
+16. **🔍 Kontrola:** Ověření přesměrování a URL adresy (očekáváno: login_page.URL) — *(===================================================================== | 3. ASSERT (Uživatel není zablokován po celkových 6 neúspěších) | =====================================================================)*
    `expect(page).to_have_url(login_page.URL)`
-19. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
+17. **🔍 Kontrola:** Ověření viditelnosti prvku `login_page.email_error` na stránce
    `expect(login_page.email_error).to_be_visible()`
-20. **🔍 Kontrola:** Ověření, že text prvku `login_page.email_error` neobsahuje re.compile('Too many login attempts', re.IGNORECASE)
+18. **🔍 Kontrola:** Ověření, že text prvku `login_page.email_error` neobsahuje re.compile('Too many login attempts', re.IGNORECASE)
    `expect(login_page.email_error).not_to_contain_text(re.compile(r"Too many login attempts", re.IGNORECASE))`
 
 <a id="modul-crs"></a>
@@ -1197,7 +1147,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc28_enr_successful_enrollment_without_ico()` |
 | **Testovací třída** | `TestCourseEnrollment` |
-| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:69`](tests/enrollment/test_enrollment.py#L69) |
+| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:72`](tests/enrollment/test_enrollment.py#L72) |
 | **Pytest Markery** | `@enrollment`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **Aplikace v rozporu s US-11 AK-3 vyžaduje IČO jako povinné a při prázdném poli hlásí Neplatné IČO** |
 | **Automatické předpoklady (Fixtures)** | `setup_logged_in_user` |
@@ -1240,7 +1190,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc29_enr_invalid_ico_validation()` |
 | **Testovací třída** | `TestCourseEnrollment` |
-| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:94`](tests/enrollment/test_enrollment.py#L94) |
+| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:97`](tests/enrollment/test_enrollment.py#L97) |
 | **Pytest Markery** | `@enrollment`, `@regression` |
 | **Automatické předpoklady (Fixtures)** | `setup_logged_in_user` |
 
@@ -1272,7 +1222,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc30_enr_short_phone_validation()` |
 | **Testovací třída** | `TestCourseEnrollment` |
-| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:111`](tests/enrollment/test_enrollment.py#L111) |
+| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:114`](tests/enrollment/test_enrollment.py#L114) |
 | **Pytest Markery** | `@enrollment`, `@regression` |
 | **Automatické předpoklady (Fixtures)** | `setup_logged_in_user` |
 
@@ -1302,7 +1252,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc31_enr_my_courses_overview_display()` |
 | **Testovací třída** | `TestCourseEnrollment` |
-| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:127`](tests/enrollment/test_enrollment.py#L127) |
+| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:130`](tests/enrollment/test_enrollment.py#L130) |
 | **Pytest Markery** | `@enrollment`, `@smoke` |
 | **Automatické předpoklady (Fixtures)** | `setup_logged_in_user` |
 
@@ -1364,7 +1314,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc48_enr_empty_state_my_courses_without_enrollments()` |
 | **Testovací třída** | `TestMyCoursesOverview` |
-| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:173`](tests/enrollment/test_enrollment.py#L173) |
+| **Zdrojový soubor** | [`tests/enrollment/test_enrollment.py:176`](tests/enrollment/test_enrollment.py#L176) |
 | **Pytest Markery** | `@enrollment`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -1433,7 +1383,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc33_lec_reject_invalid_aspect_ratio_image()` |
 | **Testovací třída** | `TestLecturerCourseManagement` |
-| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:60`](tests/lecturer/test_lecturer.py#L60) |
+| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:63`](tests/lecturer/test_lecturer.py#L63) |
 | **Pytest Markery** | `@lecturer`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **Aplikace v testovacím prostředí v rozporu s US-13 nekontroluje poměr stran obrázku na frontendu** |
 
@@ -1459,7 +1409,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc34_lec_validation_required_fields_and_numeric_values()` |
 | **Testovací třída** | `TestLecturerCourseManagement` |
-| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:81`](tests/lecturer/test_lecturer.py#L81) |
+| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:87`](tests/lecturer/test_lecturer.py#L87) |
 | **Pytest Markery** | `@lecturer`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **Aplikace v testovacím prostředí postrádá validaci povinných polí a číselných hodnot** |
 
@@ -1491,7 +1441,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc35_lec_create_course_iteration_by_lecturer()` |
 | **Testovací třída** | `TestLecturerCourseManagement` |
-| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:99`](tests/lecturer/test_lecturer.py#L99) |
+| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:105`](tests/lecturer/test_lecturer.py#L105) |
 | **Pytest Markery** | `@lecturer`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -1526,7 +1476,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc36_lec_validation_iteration_required_fields()` |
 | **Testovací třída** | `TestLecturerCourseManagement` |
-| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:127`](tests/lecturer/test_lecturer.py#L127) |
+| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:136`](tests/lecturer/test_lecturer.py#L136) |
 | **Pytest Markery** | `@lecturer`, `@regression`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **Aplikace v testovacím prostředí odesílá formulář termínu bez klientské validace povinných polí (US-14 AK-3)** |
 
@@ -1589,7 +1539,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc37_lec_lecturer_interface_and_navigation()` |
 | **Testovací třída** | `TestLecturerCourseManagement` |
-| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:143`](tests/lecturer/test_lecturer.py#L143) |
+| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:152`](tests/lecturer/test_lecturer.py#L152) |
 | **Pytest Markery** | `@lecturer`, `@smoke` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -1652,7 +1602,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc38_lec_customer_cannot_access_lecturer_create_course()` |
 | **Testovací třída** | `TestLecturerCourseManagement` |
-| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:189`](tests/lecturer/test_lecturer.py#L189) |
+| **Zdrojový soubor** | [`tests/lecturer/test_lecturer.py:201`](tests/lecturer/test_lecturer.py#L201) |
 | **Pytest Markery** | `@lecturer`, `@smoke`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník** |
 
@@ -1884,7 +1834,7 @@
 <a id="modul-sec"></a>
 ### 🛡️ Modul: Bezpečnost, RBAC a architektura (SEC)
 
-*Počet testů v modulu: **5** | Celkem akcí: **27** | Celkem kontrol: **11***
+*Počet testů v modulu: **5** | Celkem akcí: **26** | Celkem kontrol: **12***
 
 <a id="tc-43-sec-p-esm-rov-n-nep-ihl-en-ho-u-ivatele-z-priv-tn-ch-url-na-katalog"></a>
 #### `TC-43-SEC`: Přesměrování nepřihlášeného uživatele z privátních URL na katalog.
@@ -1920,7 +1870,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc44_sec_customer_cannot_access_lecturer_operations()` |
 | **Testovací třída** | `TestSecurityAndAuthorization` |
-| **Zdrojový soubor** | [`tests/security/test_security.py:45`](tests/security/test_security.py#L45) |
+| **Zdrojový soubor** | [`tests/security/test_security.py:48`](tests/security/test_security.py#L48) |
 | **Pytest Markery** | `@security`, `@smoke`, `@xfail` |
 | **⚠️ Evidovaný defekt (xfail)** | **BR-01: Aplikace v rozporu s US-18 nezabezpečuje /courses/create před rolí Zákazník** |
 
@@ -1944,7 +1894,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc45_sec_lecturer_cannot_enroll_as_customer()` |
 | **Testovací třída** | `TestSecurityAndAuthorization` |
-| **Zdrojový soubor** | [`tests/security/test_security.py:57`](tests/security/test_security.py#L57) |
+| **Zdrojový soubor** | [`tests/security/test_security.py:60`](tests/security/test_security.py#L60) |
 | **Pytest Markery** | `@security`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -1965,7 +1915,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc46_sec_csrf_cookie_present_for_stateful_forms()` |
 | **Testovací třída** | `TestSecurityAndAuthorization` |
-| **Zdrojový soubor** | [`tests/security/test_security.py:69`](tests/security/test_security.py#L69) |
+| **Zdrojový soubor** | [`tests/security/test_security.py:72`](tests/security/test_security.py#L72) |
 | **Pytest Markery** | `@security`, `@smoke` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -1992,7 +1942,7 @@
 | :--- | :--- |
 | **Kód funkce** | `test_tc47_sec_session_regeneration_on_login_and_logout()` |
 | **Testovací třída** | `TestSecurityAndAuthorization` |
-| **Zdrojový soubor** | [`tests/security/test_security.py:84`](tests/security/test_security.py#L84) |
+| **Zdrojový soubor** | [`tests/security/test_security.py:87`](tests/security/test_security.py#L87) |
 | **Pytest Markery** | `@security`, `@regression` |
 
 ##### 👣 Postup testu (Kroky & Kontroly):
@@ -2011,21 +1961,21 @@
    `logged_in_cookies = {c["name"]: c["value"] for c in context.cookies()}`
 7. **⚙️ Příprava:** Nastavení lokální proměnné `logged_in_session` = `logged_in_cookies.get('laravel_session')`
    `logged_in_session = logged_in_cookies.get("laravel_session")`
-8. **🔍 Kontrola:** Ověření podmínky datového stavu: `assert logged_in_session is not None` — *(Session ID se po úspěšném přihlášení změnilo)*
+8. **🔍 Kontrola:** Ověření podmínky datového stavu: `assert initial_session is not None, "Před přihlášením musí existovat úvodní laravel_session cookie"` (Očekáváno: 'Před přihlášením musí existovat úvodní laravel_session cookie') — *(Session ID musí existovat před přihlášením a po úspěšném přihlášení se změnit)*
+   `assert initial_session is not None, "Před přihlášením musí existovat úvodní laravel_session cookie"`
+9. **🔍 Kontrola:** Ověření podmínky datového stavu: `assert logged_in_session is not None`
    `assert logged_in_session is not None`
-9. **🔀 Větvení:** Podmíněná větev: pokud platí `initial_session`
-   `if initial_session:`
-  1. **🔍 Kontrola:** Ověření podmínky datového stavu: `assert logged_in_session != initial_session, "Session ID musí být při přihlášení regenerováno"` (Očekáváno: 'Session ID musí být při přihlášení regenerováno')
-     `assert logged_in_session != initial_session, "Session ID musí být při přihlášení regenerováno"`
-10. **🚪 Odhlášení:** Odhlášení uživatele z portálu — *(Odhlášení)*
+10. **🔍 Kontrola:** Ověření podmínky datového stavu: `assert logged_in_session != initial_session, "Session ID musí být při přihlášení regenerováno"` (Očekáváno: 'Session ID musí být při přihlášení regenerováno')
+   `assert logged_in_session != initial_session, "Session ID musí být při přihlášení regenerováno"`
+11. **🚪 Odhlášení:** Odhlášení uživatele z portálu — *(Odhlášení)*
    `logout_user(page)`
-11. **⚙️ Příprava:** Nastavení lokální proměnné `logged_out_cookies` = `...`
+12. **⚙️ Příprava:** Nastavení lokální proměnné `logged_out_cookies` = `...`
    `logged_out_cookies = {c["name"]: c["value"] for c in context.cookies()}`
-12. **⚙️ Příprava:** Inicializace Page Objectu `CoursesPage(page)` do proměnné `courses_page`
+13. **⚙️ Příprava:** Inicializace Page Objectu `CoursesPage(page)` do proměnné `courses_page`
    `courses_page = CoursesPage(page)`
-13. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.login_link` na stránce
+14. **🔍 Kontrola:** Ověření viditelnosti prvku `courses_page.login_link` na stránce
    `expect(courses_page.login_link).to_be_visible()`
-14. **🔍 Kontrola:** Ověření nepřítomnosti / skrytí prvku `courses_page.logout_button`
+15. **🔍 Kontrola:** Ověření nepřítomnosti / skrytí prvku `courses_page.logout_button`
    `expect(courses_page.logout_button).not_to_be_visible()`
 
 ---

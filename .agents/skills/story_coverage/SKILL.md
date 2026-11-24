@@ -35,7 +35,7 @@ python3 .agents/skills/story_coverage/scripts/generate_story_coverage.py
 *(Volitelně lze určit vlastní cestu výstupu parametrem `--output <cesta.html>`.)*
 
 ### Krok 2: Ověření existence reportu
-Ověřte, že byl soubor `reports/story_coverage.html` úspěšně vytvořen a má nenulovou velikost.
+Ověřte, že byl soubor `docs/story_coverage.html` úspěšně vytvořen a má nenulovou velikost.
 
 ### Krok 3: Prezentace výsledku uživateli
 Do chatu nevypisujte celý obsah souboru. Předložte pouze **stručné exekutivní shrnutí** podle této šablony:
@@ -47,7 +47,7 @@ Do chatu nevypisujte celý obsah souboru. Předložte pouze **stručné exekutiv
 - **Celkem Test Casů:** XX | **Zautomatizováno:** YY (ZZ.Z %)
 - **Aktivní evidované defekty (XFAIL):** N
 
-HTML report byl úspěšně vygenerován: [story_coverage.html](file:///cesta/k/reports/story_coverage.html)
+HTML report byl úspěšně vygenerován: [story_coverage.html](file:///cesta/k/docs/story_coverage.html)
 ```
 
 ---
@@ -55,11 +55,11 @@ HTML report byl úspěšně vygenerován: [story_coverage.html](file:///cesta/k/
 ## ⚙️ CLI parametry skriptu
 
 ```bash
-# Výchozí běh (generuje reports/story_coverage.html)
+# Výchozí běh (generuje docs/story_coverage.html)
 python3 .agents/skills/story_coverage/scripts/generate_story_coverage.py
 
 # Vlastní výstupní soubor
-python3 .agents/skills/story_coverage/scripts/generate_story_coverage.py --output docs/story_coverage.html
+python3 .agents/skills/story_coverage/scripts/generate_story_coverage.py --output reports/story_coverage.html
 
 # Tichý režim (pouze návratový kód 0 / 1)
 python3 .agents/skills/story_coverage/scripts/generate_story_coverage.py --quiet

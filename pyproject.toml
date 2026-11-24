@@ -28,6 +28,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 pythonpath = ["."]
+xfail_strict = true
 addopts = "-v --browser chromium --html=reports/html/report.html --self-contained-html"
 markers = [
     "smoke: Kritické integrační a E2E scénáře pro rychlé ověření po nasazení",

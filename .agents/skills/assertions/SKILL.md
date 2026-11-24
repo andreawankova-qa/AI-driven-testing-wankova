@@ -7,8 +7,9 @@ description: >-
   'přidej test', 'oprav kód', 'ověř funkčnost', 'implementuj scénář' nebo jakékoliv práci se soubory v tests/).
   Vynucuje 3úrovňové ověřování stavu (Routing, Session, Data State / UI Feedback), striktní zákaz Python
   assert pro UI prvky ve prospěch Playwright web-first assertions (expect), zákaz time.sleep(), zákaz assertů
-  v Page Objects (pages/), prevenci falešné pozitivity u negativních asercí (not_to_be_visible) a bezpečné
-  ověřování chybových hlášek. Zahrnuje AST skener scan_assertions.py pro statickou analýzu s možností --fix.
+  v Page Objects (pages/), zákaz podmíněných if asercí, povinný strict=True u @pytest.mark.xfail, prevenci
+  falešné pozitivity u negativních asercí (not_to_be_visible) a bezpečné ověřování chybových hlášek.
+  Zahrnuje AST skener scan_assertions.py pro statickou analýzu s možností --fix.
 ---
 
 # 🎯 Assertions – Standardy, validace a audit kontrol (Playwright & Pytest)
@@ -20,7 +21,7 @@ Tento skill představuje ucelenou metodiku pro návrh, zápis a revizi testovac�
 
 ---
 
-## 🏆 5 zlatých pravidel pro asserty v projektu
+## 🏆 8 zlatých pravidel pro asserty v projektu
 
 1. **Web-First Assertions (`expect(...)`):**  
    Pro veškeré prvky DOMu a UI stavy se výhradně používají aserce Playwrightu s automatickým čekáním (`expect(locator).to_be_visible()`, `to_have_text()`, `to_have_value()`). Nativní Python `assert` je pro UI prvky přísně zakázán.
@@ -35,6 +36,12 @@ Tento skill představuje ucelenou metodiku pro návrh, zápis a revizi testovac�
    Při negativním scénáři se nikdy nespokojíme s pouhým setrváním na URL. Vždy musí být ověřeno zobrazení konkrétní validační hlášky a zachování dat ve formuláři.
 5. **Prevence falešné pozitivity u `not_to_be_visible()`:**  
    Absence prvku se nikdy neověřuje bezprostředně po akci bez ustálení stavu. Vždy nejprve ověřte pozitivní přechod (URL, načtení nového layoutu) nebo počkejte na síťové požadavky.
+6. **Zákaz podmíněných `if` asercí:**  
+   Aserce (`expect(...)`, `assert`) nesmí být uzavřeny uvnitř podmínek `if`/`elif`/`else` (např. `if locator.is_visible(): expect(...)`). Pokud podmínka nenastane, aserce se vůbec neprovede a test projde falešně na zeleno. Každý test musí mít deterministický scénář.
+7. **Striktní `xfail` (`strict=True`):**  
+   Každý `@pytest.mark.xfail(...)` musí obsahovat parametr `strict=True` a `reason="..."` (globálně je navíc v `pyproject.toml` nastaveno `xfail_strict = true`). Pokud je defekt v aplikaci opraven, test nesmí tiše projít jako `XPASS`, ale musí selhat, aby bylo možné `xfail` odstranit.
+8. **Zákaz mělkých asercí (Shallow Assertions):**  
+   Test nesmí skončit jedinou obecnou kontrolou (např. pouze `expect(page).to_have_url(...)` nebo `expect(page.container).to_be_visible()`). Vždy musí ověřit konkrétní text, stav dat nebo validační/chybovou zprávu, aby se odlišil úspěšný a neúspěšný scénář.
 
 ---
 

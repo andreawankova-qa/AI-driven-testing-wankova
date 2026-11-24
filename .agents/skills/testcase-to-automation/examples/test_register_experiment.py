@@ -1,7 +1,7 @@
 """
 Experimentální automatizované testy pro registraci (TC-01-AUTH).
 ================================================================
-Testovací scénář převzat ze souboru docs/test_cases_experiment.md.
+Testovací scénář převzat ze souboru .agents/skills/story-to-testcases/examples/test_cases_experiment.md.
 Řídí se standardy AGENTS.md a skillem testcase-to-automation.
 """
 

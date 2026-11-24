@@ -9,6 +9,7 @@ Architektura testů:
 """
 
 import re
+import re
 import pytest
 from playwright.sync_api import Page, expect
 from pages.login_page import LoginPage
@@ -90,10 +91,10 @@ class TestLogin:
     @pytest.mark.parametrize(
         "email, password, error_field, expected_error_text",
         [
-            (settings.TEST_USER["email"], "SpatneHeslo123!", "email", None),
-            ("neexistujici_uzivatel_999@kitner.cz", "LibovolneHeslo123", "email", None),
-            (settings.TEST_USER["email"], "", "password", "The password field is required."),
-            ("", "", None, None),
+            (settings.TEST_USER["email"], "SpatneHeslo123!", "email_error", re.compile(r"\S+")),
+            ("neexistujici_uzivatel_999@kitner.cz", "LibovolneHeslo123", "email_error", re.compile(r"\S+")),
+            (settings.TEST_USER["email"], "", "password_error", "The password field is required."),
+            ("", "", "email_error", "The email field is required."),
         ],
         ids=[
             "invalid-password",
@@ -103,29 +104,20 @@ class TestLogin:
         ]
     )
     def test_tc07_auth_invalid_and_incomplete_login_credentials(
-        self, page: Page, email: str, password: str, error_field: str, expected_error_text: str
+        self, page: Page, email: str, password: str, error_field: str, expected_error_text
     ):
         """TC-07-AUTH: Negativní a validační test pro chybné či neúplné přihlašovací údaje."""
         login_page = LoginPage(page)
         login_page.open()
 
-        if email:
-            login_page.fill_email(email)
-        if password:
-            login_page.fill_password(password)
-
+        login_page.fill_email(email)
+        login_page.fill_password(password)
         login_page.click_login()
 
         expect(page).to_have_url(login_page.URL)
-
-        if error_field == "email":
-            expect(login_page.email_error).to_be_visible(timeout=5000)
-            if expected_error_text:
-                expect(login_page.email_error).to_have_text(expected_error_text)
-        elif error_field == "password":
-            expect(login_page.password_error).to_be_visible(timeout=5000)
-            if expected_error_text:
-                expect(login_page.password_error).to_have_text(expected_error_text)
+        error_locator = getattr(login_page, error_field)
+        expect(error_locator).to_be_visible(timeout=5000)
+        expect(error_locator).to_have_text(expected_error_text)
 
     @pytest.mark.regression
     @pytest.mark.parametrize(
@@ -142,8 +134,10 @@ class TestLogin:
         login_page.fill_password("PlatneHeslo123")
         login_page.click_login()
 
-        # Uživatel musí zůstat na přihlašovací stránce (prohlížeč zamezí odeslání nevalidního e-mailu)
+        # Uživatel musí zůstat nepřihlášen na přihlašovací stránce (formulář se neodešle / přihlášení neproběhne)
         expect(page).to_have_url(login_page.URL)
+        expect(login_page.login_button).to_be_visible()
+        expect(login_page.navbar.login_link).to_be_visible()
 
     # =========================================================================
     # 3. UI A BEZPEČNOSTNÍ KONTROLY

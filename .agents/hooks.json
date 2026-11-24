@@ -1,0 +1,57 @@
+{
+  "protect-skills-and-hooks": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "write_file|edit_file|run_command|write_to_file|replace_file_content|multi_replace_file_content|delete_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./hooks/protect_skills_and_hooks.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "protect-test-cases": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "write_file|edit_file|run_command|write_to_file|replace_file_content|multi_replace_file_content|delete_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./hooks/protect_test_cases.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "sync-bug-html": {
+    "enabled": true,
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file|write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./hooks/sync_bug_html.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "check-bug-dod": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./hooks/check_bug_dod.py",
+        "timeout": 15
+      }
+    ]
+  }
+}
